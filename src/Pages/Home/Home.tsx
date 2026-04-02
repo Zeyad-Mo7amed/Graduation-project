@@ -9,10 +9,10 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend, 
 } from "recharts";
 import { FiUsers, FiTool, FiCheckCircle, FiDollarSign } from "react-icons/fi";
-
-// --- 1. مصفوفات البيانات (Static Data / Mock API) ---
+import { motion } from "framer-motion"; 
 
 const STATS_CARDS = [
   {
@@ -79,7 +79,6 @@ const LATEST_ORDERS = [
   },
 ];
 
-// بيانات الرسوم البيانية
 const LINE_CHART_DATA = [
   { name: "السبت", value: 120 },
   { name: "الأحد", value: 140 },
@@ -99,21 +98,33 @@ const PIE_CHART_DATA = [
 
 const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
 
-// --- 2. المكون الرئيسي (Home Page) ---
+const itemAnim = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 export default function Home() {
   return (
-    <div dir="rtl" className="space-y-6 p-4 bg-[#F0F5FA] min-h-screen">
-      {/* عرض الكروت الإحصائية */}
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      transition={{ staggerChildren: 0.1 }}
+      dir="rtl"
+      className="space-y-6 p-4 bg-[#F0F5FA] min-h-screen"
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {STATS_CARDS.map((item) => (
-          <StatCard key={item.id} {...item} />
+          <motion.div key={item.id} variants={itemAnim}>
+            <StatCard {...item} />
+          </motion.div>
         ))}
       </div>
 
-      {/* الرسوم البيانية */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <motion.div
+          variants={itemAnim}
+          className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-100"
+        >
           <h3 className="text-xl font-bold mb-6 text-slate-800">
             معدل الطلبات اليومية
           </h3>
@@ -137,20 +148,23 @@ export default function Home() {
                   tick={{ fill: "#94A3B8", fontSize: 12, dx: -10 }}
                 />
                 <Tooltip />
+                <Legend verticalAlign="bottom" height={36} />{" "}
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke="#3B82F6"
                   strokeWidth={3}
                   dot={{ r: 4, fill: "#3B82F6" }}
-                  activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center">
+        <motion.div
+          variants={itemAnim}
+          className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center"
+        >
           <h3 className="text-xl font-bold mb-6 w-full text-right text-slate-800">
             أكثر الحرف المطلوبة
           </h3>
@@ -172,35 +186,38 @@ export default function Home() {
                   ))}
                 </Pie>
                 <Tooltip />
+                <Legend
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* القوائم */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <ListContainer title="طلبات انضمام معلقة">
-          {PENDING_CRAFTSMEN.map((person) => (
-            <JoinRequestItem
-              key={person.id}
-              name={person.name}
-              craft={person.craft}
-            />
-          ))}
-        </ListContainer>
+        <motion.div variants={itemAnim}>
+          <ListContainer title="طلبات انضمام معلقة">
+            {PENDING_CRAFTSMEN.map((person) => (
+              <JoinRequestItem key={person.id} {...person} />
+            ))}
+          </ListContainer>
+        </motion.div>
 
-        <ListContainer title="أحدث الطلبات">
-          {LATEST_ORDERS.map((order, index) => (
-            <OrderItem key={index} {...order} />
-          ))}
-        </ListContainer>
+        <motion.div variants={itemAnim}>
+          <ListContainer title="أحدث الطلبات">
+            {LATEST_ORDERS.map((order, index) => (
+              <OrderItem key={index} {...order} />
+            ))}
+          </ListContainer>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
-
-// --- 3. المكونات الفرعية (Reusable Components) ---
 
 const StatCard = ({ title, value, icon, color, iconBg }: { title: string; value: string; icon: React.ReactNode; color: string; iconBg: string }) => (
   <div
