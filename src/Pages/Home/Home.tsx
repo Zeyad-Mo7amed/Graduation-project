@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LineChart,
   Line,
@@ -203,7 +202,7 @@ export default function Home() {
 
 // --- 3. المكونات الفرعية (Reusable Components) ---
 
-const StatCard = ({ title, value, icon, color, iconBg }: any) => (
+const StatCard = ({ title, value, icon, color, iconBg }: { title: string; value: string; icon: React.ReactNode; color: string; iconBg: string }) => (
   <div
     className={`bg-white p-6 rounded-3xl shadow-sm border-r-8 ${color} flex items-center justify-between transition-transform hover:scale-[1.02]`}
   >
@@ -215,14 +214,14 @@ const StatCard = ({ title, value, icon, color, iconBg }: any) => (
   </div>
 );
 
-const ListContainer = ({ title, children }: any) => (
+const ListContainer = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <div className="space-y-4">
     <h3 className="text-xl font-black text-slate-800 mr-2">{title}</h3>
     <div className="flex flex-col gap-3">{children}</div>
   </div>
 );
 
-const JoinRequestItem = ({ name, craft }: any) => (
+const JoinRequestItem = ({ name, craft }: { name: string; craft: string }) => (
   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-between hover:shadow-md transition-shadow">
     <div className="flex items-center gap-4">
       <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-500">
@@ -244,7 +243,7 @@ const JoinRequestItem = ({ name, craft }: any) => (
   </div>
 );
 
-const OrderItem = ({ id, client, technician, status, statusColor }: any) => (
+const OrderItem = ({ id, client, technician, status, statusColor }: { id: string; client: string; technician: string; status: string; statusColor: string }) => (
   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-between hover:shadow-md transition-shadow">
     <div className="flex flex-col text-right">
       <span className="text-xs font-bold text-blue-600 mb-1">{id}</span>

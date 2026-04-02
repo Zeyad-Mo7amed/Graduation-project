@@ -1,11 +1,13 @@
 import { FiBell, FiUser, FiMenu } from "react-icons/fi"; // أضفنا FiMenu هنا
 
-export default function Navbar({ toggleSidebar }: { toggleSidebar:boolean }) {
+export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
   return (
     <nav className="bg-white h-20 border-b border-[#E5EDF4] flex items-center justify-between px-8 sticky top-0 z-30">
       <div className="flex items-center">
         <button
           onClick={toggleSidebar}
+          aria-label="فتح القائمة الجانبية"
+          title="القائمة" 
           className="md:hidden text-gray-600 ml-4 p-2 rounded-lg bg-[#F0F5FA] hover:bg-gray-200 transition-colors"
         >
           <FiMenu size={26} />

@@ -11,8 +11,13 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+interface SidebarProps {
+  isOpen: boolean;
+  toggleSidebar: () => void;
+}
+
 // استقبلنا isOpen و toggleSidebar من الأب (MainLayout)
-export default function Sidebar({ isOpen, toggleSidebar }) {
+export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const navItems = [
     { name: "الرئيسية", icon: FiHome, isActive: true },
     { name: "مراجعة الحرفيين", icon: FiUser },

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 export default function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   return (
     <>
       <div className="flex bg-[#F0F5FA]" dir="rtl">
