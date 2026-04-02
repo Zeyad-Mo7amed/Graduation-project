@@ -226,7 +226,7 @@ const StatCard = ({ title, value, icon, color, iconBg }: { title: string; value:
     <div className={`${iconBg} p-4 rounded-2xl text-2xl`}>{icon}</div>
     <div className="text-left">
       <p className="text-slate-400 text-sm font-bold mb-1">{title}</p>
-      <h4 className="text-xl font-black text-slate-800 text-right">{value}</h4>
+      <h4 className=" font-black text-slate-800 text-right">{value}</h4>
     </div>
   </div>
 );
