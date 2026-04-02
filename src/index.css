@@ -1,17 +1,72 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "Inter";
-  src: url("./assets/Fonts/Inter/Inter-VariableFont_opsz\,wght.ttf") format("truetype");
-  font-weight: 400;
+@theme {
+  /* --- Primary Colors (Blue) --- */
+  --color-primary-50: #E8F1FD;
+  --color-primary-100: #D0E3FB;
+  --color-primary-200: #A1C6F7;
+  --color-primary-300: #72AAF3;
+  --color-primary-400: #438EEF;
+  --color-primary-500: #2F81ED;
+  --color-primary-600: #105BBC;
+  --color-primary-700: #0C448D;
+  --color-primary-800: #082D5E;
+  --color-primary-900: #04172F;
+  --color-primary-950: #020B17;
+
+  /* --- Neutral Colors (Gray/Slate) --- */
+  --color-neutral-50: #F0F2F4;
+  --color-neutral-100: #E1E5EA;
+  --color-neutral-200: #C4CBD4;
+  --color-neutral-300: #A6B0BF;
+  --color-neutral-400: #8896AA;
+  --color-neutral-500: #64748B;
+  --color-neutral-600: #556377;
+  --color-neutral-700: #404A59;
+  --color-neutral-800: #2B323B;
+  --color-neutral-900: #15191E;
+  --color-neutral-950: #0B0C0F;
+
+  /* --- Success Colors (Green) --- */
+  --color-success-50: #E8FDF6;
+  --color-success-100: #D0FBED;
+  --color-success-200: #A1F7DA;
+  --color-success-300: #72F3C8;
+  --color-success-400: #43EFB6;
+  --color-success-500: #10B981;
+  --color-success-600: #10BC83;
+  --color-success-700: #0C8D62;
+  --color-success-800: #085E41;
+  --color-success-900: #042F21;
+  --color-success-950: #021710;
+
+  /* --- Error Colors (Red) --- */
+  --color-error-50: #FDE8E8;
+  --color-error-100: #FBD0D0;
+  --color-error-200: #F7A1A1;
+  --color-error-300: #F37272;
+  --color-error-400: #EF4343;
+  --color-error-500: #EF4444;
+  --color-error-600: #BC1010;
+  --color-error-700: #8D0C0C;
+  --color-error-800: #5E0808;
+  --color-error-900: #2F0404;
+  --color-error-950: #170202;
+
+  /* --- Typography --- */
+  --font-inter: "Inter", ui-sans-serif, system-ui;
 }
 
+/* استدعاء الخطوط */
 @font-face {
   font-family: "Inter";
-  src: url("./assets/Fonts/Inter/Inter-Bold.ttf") format("truetype");
-  font-weight: 700;
+  src: url("./assets/Fonts/Inter/Inter-VariableFont_opsz,wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
 }
 
-body {
-  font-family: "Inter", sans-serif;
+@layer base {
+  body {
+    @apply font-inter bg-neutral-50 text-neutral-900;
+  }
 }
