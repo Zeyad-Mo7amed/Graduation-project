@@ -1,6 +1,6 @@
 import { AiOutlineSafety } from "react-icons/ai";
 import { BsLightning } from "react-icons/bs";
-import { CiCircleCheck, CiSettings } from "react-icons/ci";
+import { CiCircleCheck } from "react-icons/ci";
 import { MdHome } from "react-icons/md";
 import { Link } from "react-router-dom";
 import image from "../../../assets/d8a78d15c9e73a84c13f2eb5a78a8639ef8e0f7a.png";
@@ -95,6 +95,7 @@ export default function Login() {
                       />
                     </svg>
                     <button
+                      title="قبول الطلب"
                       type="button"
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
@@ -141,8 +142,20 @@ export default function Login() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <img src={icone} alt="registerIcone" />
 
-              <div className="absolute left-0 -top-12 -rotate-6 w-[56px] h-[56px] rounded-xl p-[14px] bg-[#B6C5E9] flex items-center justify-center">
-                <CiSettings className="text-3xl" />
+              <div className="absolute text-[#07788A] left-0 -top-12 -rotate-6 w-[56px] h-[56px] rounded-xl p-[14px] bg-[#B6C5E9] flex items-center justify-center">
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  height="26"
+                  width="26"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
               </div>
               <div className="absolute -top-12  rotate-6 w-[56px] h-[56px] rounded-xl p-[14px] bg-[#B6C5E9] flex items-center justify-center">
                 <BsLightning className="text-3xl text-yellow-600" />

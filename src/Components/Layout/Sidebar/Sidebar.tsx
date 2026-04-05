@@ -17,15 +17,14 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
-  const location = useLocation(); // جلب المسار الحالي
-
+  const location = useLocation(); 
   const navItems = [
     { name: "الرئيسية", icon: FiHome, path: "/" },
-    { name: "مراجعة الحرفيين", icon: FiUser, path: "/Review" },
-    { name: "إدارة المستخدمين", icon: FiUsers, path: "/Users" },
-    { name: "إدارة الطلبات", icon: FiBriefcase, path: "/Orders" },
-    { name: "الشكاوى والدعم", icon: FiHelpCircle, path: "/Support" },
-    { name: "الطلبات المالية", icon: FiCreditCard, path: "/Payments" },
+    { name: "مراجعة الحرفيين", icon: FiUser, path: "/review" },
+    { name: "إدارة المستخدمين", icon: FiUsers, path: "/users" },
+    { name: "إدارة الطلبات", icon: FiBriefcase, path: "/orders" },
+    { name: "الشكاوى والدعم", icon: FiHelpCircle, path: "/support" },
+    { name: "الطلبات المالية", icon: FiCreditCard, path: "/payments" },
   ];
 
   return (
@@ -52,6 +51,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
             </span>
           </div>
           <button
+            title="حذف العنصر"
             onClick={toggleSidebar}
             className="md:hidden text-gray-500 hover:text-red-500 transition-colors"
           >

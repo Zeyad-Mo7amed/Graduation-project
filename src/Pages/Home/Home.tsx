@@ -9,11 +9,10 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend, 
+  Legend,
 } from "recharts";
 import { FiUsers, FiTool, FiCheckCircle, FiDollarSign } from "react-icons/fi";
-import { motion } from "framer-motion"; 
-//ءيبسشيبسشي
+import { motion } from "framer-motion";
 const STATS_CARDS = [
   {
     id: 1,
@@ -130,7 +129,10 @@ export default function Home() {
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={LINE_CHART_DATA}>
+              <LineChart
+                data={LINE_CHART_DATA}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }} 
+              >
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -141,20 +143,26 @@ export default function Home() {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "#94A3B8", fontSize: 12 }}
-                />
+                  dy={10} 
+
+                  />
                 <YAxis
+                  width={50}
+
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94A3B8", fontSize: 12, dx: -10 }}
-                />
+                  tick={{ fill: "#94A3B8", fontSize: 12, dx: -15 }}
+
+                  />
                 <Tooltip />
-                <Legend verticalAlign="bottom" height={36} />{" "}
+                <Legend verticalAlign="bottom" height={36} />
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke="#3B82F6"
                   strokeWidth={3}
                   dot={{ r: 4, fill: "#3B82F6" }}
+                  animationDuration={2000}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -197,7 +205,6 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* القوائم */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div variants={itemAnim}>
           <ListContainer title="طلبات انضمام معلقة">
@@ -219,7 +226,19 @@ export default function Home() {
   );
 }
 
-const StatCard = ({ title, value, icon, color, iconBg }: { title: string; value: string; icon: React.ReactNode; color: string; iconBg: string }) => (
+const StatCard = ({
+  title,
+  value,
+  icon,
+  color,
+  iconBg,
+}: {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  color: string;
+  iconBg: string;
+}) => (
   <div
     className={`bg-white p-6 rounded-3xl shadow-sm border-r-8 ${color} flex items-center justify-between transition-transform hover:scale-[1.02]`}
   >
@@ -231,7 +250,13 @@ const StatCard = ({ title, value, icon, color, iconBg }: { title: string; value:
   </div>
 );
 
-const ListContainer = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const ListContainer = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
   <div className="space-y-4">
     <h3 className="text-xl font-black text-slate-800 mr-2">{title}</h3>
     <div className="flex flex-col gap-3">{children}</div>
@@ -260,7 +285,19 @@ const JoinRequestItem = ({ name, craft }: { name: string; craft: string }) => (
   </div>
 );
 
-const OrderItem = ({ id, client, technician, status, statusColor }: { id: string; client: string; technician: string; status: string; statusColor: string }) => (
+const OrderItem = ({
+  id,
+  client,
+  technician,
+  status,
+  statusColor,
+}: {
+  id: string;
+  client: string;
+  technician: string;
+  status: string;
+  statusColor: string;
+}) => (
   <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center justify-between hover:shadow-md transition-shadow">
     <div className="flex flex-col text-right">
       <span className="text-xs font-bold text-blue-600 mb-1">{id}</span>
