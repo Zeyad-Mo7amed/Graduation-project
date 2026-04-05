@@ -7,10 +7,9 @@ import {
 } from "react-icons/fa";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi2";
 import { motion } from "framer-motion"; // ضيف دي عشان الأنميشن
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Orders() {
-  const navigate = useNavigate();
   const orders = [
     {
       id: "10025",
