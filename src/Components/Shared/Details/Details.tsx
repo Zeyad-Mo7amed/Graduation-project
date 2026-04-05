@@ -214,13 +214,13 @@ export default function Details() {
                 <p className="font-black text-slate-800 text-lg">
                   {orderData.customer.name}
                 </p>
-                <a
-                  href={`tel:${orderData.customer.phone}`}
+                <Link
+                  to={`tel:${orderData.customer.phone}`}
                   className="text-slate-400 font-bold text-sm hover:text-blue-500 transition-colors"
                   dir="ltr"
                 >
                   {orderData.customer.phone}
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -229,7 +229,7 @@ export default function Details() {
               dir="rtl"
             >
               <span className="text-[#2B323B] font-bold ms-2 text-lg whitespace-nowrap">
-                عنوان الخدمة
+                {`عنوان الخدمة`}
               </span>
               <div className="text-blue-500 shrink-0">
                 <FiMapPin size={22} />
@@ -239,17 +239,18 @@ export default function Details() {
             <p className="text-slate-500 text-sm font-medium leading-relaxed mb-4 text-right">
               {orderData.customer.address.text}
             </p>
-
             {/* الخريطة مع زر التتبع الخارجي */}
-            <div className="h-64 rounded-[2rem] overflow-hidden border-4 border-slate-50 relative group">
-              <a
-                href={googleMapsUrl}
+            <div className="h-64 rounded-[2rem] overflow-hidden border-4 border-slate-50 relative z-10 group">
+              {/* الزرار المحدث */}
+              <Link
+                to={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 left-4 z-[1000] bg-white text-blue-600 px-3 py-2 rounded-xl shadow-lg font-bold text-xs flex items-center gap-2 hover:bg-blue-50 transition-all opacity-0 group-hover:opacity-100"
+                className="absolute top-4 left-15 z-[9999] bg-white text-blue-600 px-3 py-2 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-blue-50 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 opacity-100"
               >
                 تتبع في خرائط جوجل <FiExternalLink />
-              </a>
+              </Link>
+
               <MapContainer
                 center={mapCenter}
                 zoom={14}
@@ -297,12 +298,12 @@ export default function Details() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <a
-                href={`tel:${orderData.customer.phone}`}
+              <Link
+                to={`tel:${orderData.customer.phone}`}
                 className="bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100"
               >
                 اتصال <FiPhone />
-              </a>
+              </Link>
               <button className="bg-blue-50 cursor-pointer text-blue-600 py-4 rounded-2xl font-black flex items-center justify-center gap-2 border border-blue-100 hover:bg-blue-100 transition-colors">
                 مراسلة <FiMessageCircle />
               </button>
@@ -315,7 +316,15 @@ export default function Details() {
 }
 
 // المكونات الفرعية (نفس المنطق السابق)
-const DetailRow = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
+const DetailRow = ({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) => (
   <div className="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
     <p className="text-slate-400 font-bold text-sm">{label}</p>
     <div className="flex items-center gap-2 text-slate-800 font-black text-sm">
