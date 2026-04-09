@@ -184,7 +184,7 @@ export default function DetailsUsers() {
 }
 
 // مكون فرعي للكروت (StatsCard) لتقليل تكرار الكود
-function StatsCard({ title, value, icon, bgColor, isWarning }: { title: string; value: string; icon: React.ReactNode; bgColor: string; isWarning?: boolean }) {
+function StatsCard({ title, value, icon, bgColor }: { title: string; value: string; icon: React.ReactNode; bgColor: string; isWarning?: boolean }) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
       <div>
