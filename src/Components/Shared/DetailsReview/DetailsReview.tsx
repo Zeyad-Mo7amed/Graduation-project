@@ -27,7 +27,7 @@ const attachments = [
 ];
 
 export default function DetailsReview() {
-  const [selectedImg, setSelectedImg] = useState(null); // حالة الصورة المختارة
+  const [selectedImg, setSelectedImg] = useState<string | null>(null); // حالة الصورة المختارة
 
   return (
     <motion.div
@@ -82,7 +82,7 @@ export default function DetailsReview() {
           {attachments.map((file) => (
             <motion.div
               key={file.id}
-              onClick={() => setSelectedImg(file.img)} // عند الضغط يفتح الصورة
+              onClick={() => setSelectedImg(file.img as string)} 
               className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer hover:border-blue-300 transition-colors group"
             >
               <p className="text-gray-700 font-bold mb-4 text-center">
