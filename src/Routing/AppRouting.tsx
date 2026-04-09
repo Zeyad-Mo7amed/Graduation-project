@@ -9,6 +9,8 @@ import Orders from "../Pages/Orders/Orders";
 import Support from "../Pages/Support/Support";
 import Payments from "../Pages/Payments/Payments";
 import Details from "../Components/Shared/Details/Details";
+import DetailsUsers from "../Components/Shared/DetailsUsers/DetailsUsers";
+import DetailsReview from "../Components/Shared/DetailsReview/DetailsReview";
 
 export const routes = createBrowserRouter([
   {
@@ -17,9 +19,11 @@ export const routes = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "review", element: <ReviewOfCraftsmen /> },
-      { path: "users",  element: <Users /> },
-      { path: "orders", element: <Orders />, },
-      { path:"detailsOrder/:id", element: <Details /> },
+      { path: "users", element: <Users /> },
+      { path: "orders", element: <Orders /> },
+      { path: "detailsOrder/:id", element: <Details /> },
+      { path: "DetailsUsers/:id", element: <DetailsUsers /> },
+      { path: "DetailsReview/:id", element: <DetailsReview /> },
       { path: "support", element: <Support /> },
       { path: "payments", element: <Payments /> },
     ],

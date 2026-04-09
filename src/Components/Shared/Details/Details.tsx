@@ -8,14 +8,13 @@ import {
   FiPhone,
   FiMessageCircle,
   FiFileText,
-  FiExternalLink, // أيقونة لفتح الخريطة الخارجية
+  FiExternalLink,
 } from "react-icons/fi";
 import { FaStar, FaWrench } from "react-icons/fa";
 import L from "leaflet";
 import { motion } from "framer-motion"; // مكتبة الأنيميشن
 import { Link } from "react-router-dom";
 
-// حل مشكلة أيقونات Leaflet
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 
@@ -65,7 +64,6 @@ const orderData = {
   },
 };
 
-// إعدادات الأنيميشن للكروت
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -78,7 +76,6 @@ export default function Details() {
     orderData.customer.address.lng,
   ];
 
-  // رابط جوجل ماب للتتبع
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${orderData.customer.address.lat},${orderData.customer.address.lng}`;
 
   return (
