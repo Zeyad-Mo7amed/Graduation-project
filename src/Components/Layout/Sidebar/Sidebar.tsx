@@ -9,7 +9,7 @@ import {
   FiCreditCard,
   FiLogOut,
 } from "react-icons/fi";
-import { Link, useLocation } from "react-router-dom"; // استخدمنا useLocation
+import { Link, useLocation } from "react-router-dom";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
-  const location = useLocation(); 
+  const location = useLocation();
   const navItems = [
     { name: "الرئيسية", icon: FiHome, path: "/" },
     { name: "مراجعة الحرفيين", icon: FiUser, path: "/review" },
@@ -29,40 +29,44 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
   return (
     <>
+      {/* Overlay - Darkened more in dark mode */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 md:hidden transition-opacity"
+          className="fixed inset-0 bg-black/30 dark:bg-black/60 z-40 md:hidden transition-opacity"
           onClick={toggleSidebar}
         ></div>
       )}
 
+      {/* Main Sidebar Container */}
       <div
-        className={`fixed md:sticky inset-y-0 right-0 z-50 w-auto bg-white transform transition-transform duration-300 
+        className={`fixed md:sticky inset-y-0 right-0 z-50 w-auto bg-white dark:bg-[#111827] transform transition-transform duration-300 
           ${isOpen ? "translate-x-0" : "translate-x-full"} 
-          md:translate-x-0 shadow-sm border-l border-[#E5EDF4] flex flex-col h-screen`}
+          md:translate-x-0 shadow-sm border-l border-[#E5EDF4] dark:border-gray-800 flex flex-col h-screen`}
       >
-        <div className="flex items-center justify-between p-6 h-24 border-b border-[#E5EDF4] shrink-0">
+        {/* Header Section */}
+        <div className="flex items-center justify-between p-6 h-24 border-b border-[#E5EDF4] dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="bg-[#E7F3FF] text-[#3B82F6] p-3 rounded-full flex items-center justify-center">
+            <div className="bg-[#E7F3FF] dark:bg-[#1e293b] text-[#3B82F6] p-3 rounded-full flex items-center justify-center">
               <FiTool size={26} strokeWidth={1.5} />
             </div>
-            <span className="text-2xl sm:flex  md:hidden lg:flex font-bold text-black leading-none">
+            <span className="text-2xl sm:flex md:hidden lg:flex font-bold text-black dark:text-white leading-none">
               خدماتي
             </span>
           </div>
           <button
-            title="حذف العنصر"
+            title="إغلاق"
             onClick={toggleSidebar}
-            className="md:hidden text-gray-500 hover:text-red-500 transition-colors"
+            className="md:hidden text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
           >
             <FiX size={24} />
           </button>
         </div>
 
+        {/* Navigation Items */}
         <nav className="flex-1 p-6 space-y-3 mt-1 overflow-y-auto">
           {navItems.map((item, index) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path; // تحقق من المسار الحالي
+            const isActive = location.pathname === item.path;
             return (
               <Link
                 onClick={toggleSidebar}
@@ -71,11 +75,11 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                 className={`flex items-center gap-4 p-4 rounded-xl transition-all h-[60px] ${
                   isActive
                     ? "bg-[#3B82F6] text-white shadow-md"
-                    : "text-[#738398] hover:bg-[#F0F5FA] hover:text-black"
+                    : "text-[#738398] dark:text-gray-400 hover:bg-[#F0F5FA] dark:hover:bg-[#1f2937] hover:text-black dark:hover:text-white"
                 }`}
               >
                 <Icon size={22} className="shrink-0" />
-                <span className="text-lg font-medium sm:flex  md:hidden lg:flex">
+                <span className="text-lg font-medium sm:flex md:hidden lg:flex">
                   {item.name}
                 </span>
               </Link>
@@ -83,13 +87,14 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           })}
         </nav>
 
-        <div className="p-6 border-t border-[#E5EDF4] mt-auto">
+        {/* Footer / Logout */}
+        <div className="p-6 border-t border-[#E5EDF4] dark:border-gray-800 mt-auto">
           <button
-            className="flex items-center gap-4 p-4 w-full text-[#DC2626] rounded-xl hover:bg-red-50 transition-colors h-[60px]"
+            className="flex items-center gap-4 p-4 w-full text-[#DC2626] dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors h-[60px]"
             onClick={() => console.log("Logging out...")}
           >
             <FiLogOut size={22} className="shrink-0 " />
-            <span className="text-lg sm:flex  md:hidden lg:flex font-medium">
+            <span className="text-lg sm:flex md:hidden lg:flex font-medium">
               تسجيل الخروج
             </span>
           </button>

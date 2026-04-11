@@ -12,7 +12,7 @@ import {
 } from "react-icons/fi";
 import { FaStar, FaWrench } from "react-icons/fa";
 import L from "leaflet";
-import { motion } from "framer-motion"; // مكتبة الأنيميشن
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 import icon from "leaflet/dist/images/marker-icon.png";
@@ -30,7 +30,7 @@ const orderData = {
   status: "قيد التنفيذ",
   customer: {
     name: "محمد عبدالله",
-    phone: "+201234567890", // الرقم بدون مسافات للاتصال
+    phone: "+201234567890",
     avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     address: {
       text: "شقة 12، عمارة 4 شارع التسعين الشمالي، التجمع الخامس، القاهرة",
@@ -76,25 +76,27 @@ export default function Details() {
     orderData.customer.address.lng,
   ];
 
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${orderData.customer.address.lat},${orderData.customer.address.lng}`;
+  const googleMapsUrl = `https://www.google.com/maps?q=${orderData.customer.address.lat},${orderData.customer.address.lng}`;
 
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans text-[#2B323B]"
+      className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] p-4 md:p-8 font-sans text-[#2B323B] dark:text-gray-200 transition-colors duration-300"
     >
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <Link
           to="/orders"
-          className="flex items-center gap-2 text-blue-600 font-bold hover:gap-3 transition-all w-fit"
+          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold hover:gap-3 transition-all w-fit"
         >
           <FiArrowLeft className="rotate-180" size={20} />
           <span>العودة للطلبات</span>
         </Link>
-        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-100">
-          <span className="text-slate-400 font-bold text-sm">حالة الطلب:</span>
-          <span className="bg-amber-100 text-amber-600 font-black px-4 py-1 rounded-xl text-xs">
+        <div className="flex items-center gap-3 bg-white dark:bg-[#1E293B] px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+          <span className="text-slate-400 dark:text-gray-500 font-bold text-sm">
+            حالة الطلب:
+          </span>
+          <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-black px-4 py-1 rounded-xl text-xs">
             {orderData.status}
           </span>
         </div>
@@ -106,9 +108,9 @@ export default function Details() {
           {/* كارت تفاصيل الخدمة */}
           <motion.div
             {...fadeInUp}
-            className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50"
+            className="bg-white dark:bg-[#1E293B] p-6 rounded-[2.5rem] shadow-sm border border-slate-50 dark:border-gray-800"
           >
-            <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-slate-800">
+            <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-slate-800 dark:text-white">
               <FaWrench className="text-blue-500" /> تفاصيل الخدمة
             </h3>
             <div className="space-y-4">
@@ -125,18 +127,18 @@ export default function Details() {
               />
 
               <div className="mt-6">
-                <p className="text-slate-400 font-bold mb-3 text-sm">
+                <p className="text-slate-400 dark:text-gray-500 font-bold mb-3 text-sm">
                   وصف المشكلة
                 </p>
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                  <p className="text-slate-600 leading-relaxed text-sm font-medium">
+                <div className="bg-slate-50 dark:bg-[#0F172A] p-5 rounded-2xl border border-slate-100 dark:border-gray-800">
+                  <p className="text-slate-600 dark:text-gray-300 leading-relaxed text-sm font-medium">
                     {orderData.service.description}
                   </p>
                 </div>
               </div>
 
               <div className="mt-6">
-                <p className="text-slate-400 font-bold mb-3 text-sm">
+                <p className="text-slate-400 dark:text-gray-500 font-bold mb-3 text-sm">
                   الصور المرفقة
                 </p>
                 <div className="flex gap-3">
@@ -145,7 +147,7 @@ export default function Details() {
                       key={i}
                       src={img}
                       alt="attachment"
-                      className="w-24 h-24 rounded-2xl object-cover border-2 border-white shadow-sm"
+                      className="w-24 h-24 rounded-2xl object-cover border-2 border-white dark:border-gray-700 shadow-sm"
                     />
                   ))}
                 </div>
@@ -157,11 +159,11 @@ export default function Details() {
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.1 }}
-            className="bg-white p-6 rounded-[12px] shadow-sm border-l-[12px] border-blue-500"
+            className="bg-white dark:bg-[#1E293B] p-6 rounded-[12px] shadow-sm border-l-[12px] border-blue-500 dark:border-l-blue-600"
           >
-            <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-slate-800">
+            <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-slate-800 dark:text-white">
               <FiFileText className="text-blue-500" /> الملخص المالي
-              <span className="mr-auto bg-emerald-100 text-emerald-600 px-3 py-1 rounded-lg text-[10px]">
+              <span className="mr-auto bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-lg text-[10px]">
                 مدفوع
               </span>
             </h3>
@@ -178,9 +180,11 @@ export default function Details() {
                 label="ضريبة القيمة المضافة (14%)"
                 value={orderData.financial.vat}
               />
-              <div className="border-t border-dashed border-slate-200 pt-4 mt-4 flex justify-between items-end">
-                <p className="font-black text-slate-800 text-xl">الإجمالي</p>
-                <p className="text-blue-600 font-black text-3xl">
+              <div className="border-t border-dashed border-slate-200 dark:border-gray-700 pt-4 mt-4 flex justify-between items-end">
+                <p className="font-black text-slate-800 dark:text-white text-xl">
+                  الإجمالي
+                </p>
+                <p className="text-blue-600 dark:text-blue-400 font-black text-3xl">
                   <span className="text-sm ml-1">ج.م</span>{" "}
                   {orderData.financial.total.toFixed(2)}
                 </p>
@@ -191,29 +195,29 @@ export default function Details() {
 
         {/* العمود الأيسر */}
         <div className="lg:col-span-5 space-y-8">
-          {/* كارت بيانات العميل + الخريطة المحدثة */}
+          {/* كارت بيانات العميل + الخريطة */}
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.2 }}
-            className="bg-white p-6 rounded-[12px] shadow-sm border border-slate-50"
+            className="bg-white dark:bg-[#1E293B] p-6 rounded-[12px] shadow-sm border border-slate-50 dark:border-gray-800"
           >
-            <h3 className="text-lg font-black mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-black mb-6 flex items-center gap-2 dark:text-white">
               <span className="w-2 h-2 rounded-full bg-blue-500"></span> بيانات
               العميل
             </h3>
             <div className="flex items-center gap-4 mb-6">
               <img
                 src={orderData.customer.avatar}
-                className="w-16 h-16 rounded-full border-2 border-slate-100"
+                className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700"
                 alt="avatar"
               />
               <div className="flex-1 text-right">
-                <p className="font-black text-slate-800 text-lg">
+                <p className="font-black text-slate-800 dark:text-white text-lg">
                   {orderData.customer.name}
                 </p>
                 <Link
                   to={`tel:${orderData.customer.phone}`}
-                  className="text-slate-400 font-bold text-sm hover:text-blue-500 transition-colors"
+                  className="text-slate-400 dark:text-gray-500 font-bold text-sm hover:text-blue-500 transition-colors"
                   dir="ltr"
                 >
                   {orderData.customer.phone}
@@ -225,25 +229,24 @@ export default function Details() {
               className="flex flex-row-reverse items-center justify-end w-full px-2 mb-4"
               dir="rtl"
             >
-              <span className="text-[#2B323B] font-bold ms-2 text-lg whitespace-nowrap">
-                {`عنوان الخدمة`}
+              <span className="text-[#2B323B] dark:text-gray-200 font-bold ms-2 text-lg whitespace-nowrap">
+                عنوان الخدمة
               </span>
               <div className="text-blue-500 shrink-0">
                 <FiMapPin size={22} />
               </div>
             </div>
 
-            <p className="text-slate-500 text-sm font-medium leading-relaxed mb-4 text-right">
+            <p className="text-slate-500 dark:text-gray-400 text-sm font-medium leading-relaxed mb-4 text-right">
               {orderData.customer.address.text}
             </p>
-            {/* الخريطة مع زر التتبع الخارجي */}
-            <div className="h-64 rounded-[2rem] overflow-hidden border-4 border-slate-50 relative z-10 group">
-              {/* الزرار المحدث */}
+
+            <div className="h-64 rounded-[2rem] overflow-hidden border-4 border-slate-50 dark:border-gray-800 relative z-10 group">
               <Link
                 to={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 left-15 z-[9999] bg-white text-blue-600 px-3 py-2 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-blue-50 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 opacity-100"
+                className="absolute top-4 left-4 z-[9999] bg-white dark:bg-[#1E293B] text-blue-600 dark:text-blue-400 px-3 py-2 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-blue-50 dark:border-gray-700 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 opacity-100"
               >
                 تتبع في خرائط جوجل <FiExternalLink />
               </Link>
@@ -265,31 +268,31 @@ export default function Details() {
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.3 }}
-            className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50"
+            className="bg-white dark:bg-[#1E293B] p-6 rounded-[2.5rem] shadow-sm border border-slate-50 dark:border-gray-800"
           >
-            <h3 className="text-lg font-black mb-6 flex items-center gap-2">
+            <h3 className="text-lg font-black mb-6 flex items-center gap-2 dark:text-white">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>{" "}
               بيانات الحرفي
             </h3>
             <div className="flex items-center gap-4 mb-8">
               <img
                 src={orderData.craftsman.avatar}
-                className="w-16 h-16 rounded-full border-2 border-slate-100"
+                className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700"
                 alt="avatar"
               />
               <div className="flex-1 text-right">
-                <p className="font-black text-slate-800 text-lg">
+                <p className="font-black text-slate-800 dark:text-white text-lg">
                   {orderData.craftsman.name}
                 </p>
-                <p className="text-blue-500 font-bold text-xs">
+                <p className="text-blue-500 dark:text-blue-400 font-bold text-xs">
                   {orderData.craftsman.title}
                 </p>
               </div>
-              <div className="bg-slate-50 p-3 rounded-2xl text-center border border-slate-100">
+              <div className="bg-slate-50 dark:bg-[#0F172A] p-3 rounded-2xl text-center border border-slate-100 dark:border-gray-800">
                 <div className="flex items-center gap-1 text-amber-500 font-black justify-center">
                   <FaStar size={12} /> {orderData.craftsman.rating}
                 </div>
-                <p className="text-[10px] text-slate-400 font-bold mt-1">
+                <p className="text-[10px] text-slate-400 dark:text-gray-500 font-bold mt-1">
                   ({orderData.craftsman.reviews} تقييم)
                 </p>
               </div>
@@ -297,11 +300,11 @@ export default function Details() {
             <div className="grid grid-cols-2 gap-4">
               <Link
                 to={`tel:${orderData.customer.phone}`}
-                className="bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100"
+                className="bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100 dark:shadow-none"
               >
                 اتصال <FiPhone />
               </Link>
-              <button className="bg-blue-50 cursor-pointer text-blue-600 py-4 rounded-2xl font-black flex items-center justify-center gap-2 border border-blue-100 hover:bg-blue-100 transition-colors">
+              <button className="bg-blue-50 dark:bg-blue-900/20 cursor-pointer text-blue-600 dark:text-blue-400 py-4 rounded-2xl font-black flex items-center justify-center gap-2 border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
                 مراسلة <FiMessageCircle />
               </button>
             </div>
@@ -312,7 +315,6 @@ export default function Details() {
   );
 }
 
-// المكونات الفرعية (نفس المنطق السابق)
 const DetailRow = ({
   label,
   value,
@@ -322,18 +324,25 @@ const DetailRow = ({
   value: string;
   icon?: React.ReactNode;
 }) => (
-  <div className="flex justify-between items-center py-3 border-b border-slate-50 last:border-0">
-    <p className="text-slate-400 font-bold text-sm">{label}</p>
-    <div className="flex items-center gap-2 text-slate-800 font-black text-sm">
-      {value} {icon && <span className="text-slate-300">{icon}</span>}
+  <div className="flex justify-between items-center py-3 border-b border-slate-50 dark:border-gray-800 last:border-0">
+    <p className="text-slate-400 dark:text-gray-500 font-bold text-sm">
+      {label}
+    </p>
+    <div className="flex items-center gap-2 text-slate-800 dark:text-gray-200 font-black text-sm">
+      {value}{" "}
+      {icon && (
+        <span className="text-slate-300 dark:text-gray-600">{icon}</span>
+      )}
     </div>
   </div>
 );
 
 const PriceRow = ({ label, value }: { label: string; value: number }) => (
   <div className="flex justify-between items-center">
-    <p className="text-slate-500 font-bold text-sm">{label}</p>
-    <p className="text-slate-800 font-black text-lg">
+    <p className="text-slate-500 dark:text-gray-400 font-bold text-sm">
+      {label}
+    </p>
+    <p className="text-slate-800 dark:text-white font-black text-lg">
       <span className="text-[10px] ml-1">ج.م</span> {value.toFixed(2)}
     </p>
   </div>

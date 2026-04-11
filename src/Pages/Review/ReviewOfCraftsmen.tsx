@@ -56,7 +56,7 @@ export default function ReviewOfCraftsmen() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-4 md:p-6 bg-[#fcfcfc] min-h-screen"
+      className="p-4 md:p-6 bg-[#fcfcfc] dark:bg-[#0F172A] min-h-screen transition-colors duration-300"
       dir="rtl"
     >
       {/* Header Search & Filter */}
@@ -65,25 +65,25 @@ export default function ReviewOfCraftsmen() {
           <input
             type="text"
             placeholder="بحث باسم الحرفي أو المهنة..."
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-slate-800 dark:text-white rounded-lg focus:outline-none focus:border-blue-500 transition-all placeholder:text-gray-400"
           />
           <IoSearchOutline
-            className="absolute left-3 top-3 text-gray-400"
+            className="absolute left-3 top-3 text-gray-400 dark:text-gray-500"
             size={18}
           />
         </div>
-        <button className="border cursor-pointer border-gray-200 bg-white text-gray-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-all">
+        <button className="border cursor-pointer border-gray-200 dark:border-slate-800 bg-white dark:bg-[#1E293B] text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
           <IoFilter size={18} />
           <span>تصفية</span>
         </button>
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-4 border-b border-gray-50 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-3">
+      <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+        <div className="p-4 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-3">
             طلبات الانضمام
-            <span className="bg-orange-50 text-orange-500 text-xs px-2 py-1 rounded-md font-bold">
+            <span className="bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400 text-xs px-2 py-1 rounded-md font-bold">
               24 طلب معلق
             </span>
           </h2>
@@ -92,7 +92,7 @@ export default function ReviewOfCraftsmen() {
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200">
           <table className="w-full text-right border-collapse min-w-[700px]">
             <thead>
-              <tr className="text-gray-400 text-sm border-b border-gray-50">
+              <tr className="text-gray-400 dark:text-gray-500 text-sm border-b border-gray-50 dark:border-slate-800">
                 <th className="px-6 py-4 font-medium">الحرفي</th>
                 <th className="px-6 py-4 font-medium">المهنة</th>
                 <th className="px-6 py-4 font-medium">رقم الهاتف</th>
@@ -101,14 +101,14 @@ export default function ReviewOfCraftsmen() {
                 <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
               {requests.map((request, index) => (
                 <motion.tr
                   key={request.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="hover:bg-gray-50/50 transition-colors"
+                  className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors"
                 >
                   <td className="px-6 py-4 flex items-center gap-3">
                     <img
@@ -116,38 +116,39 @@ export default function ReviewOfCraftsmen() {
                       alt=""
                       className="w-9 h-9 rounded-full object-cover grayscale-[0.5]"
                     />
-                    <span className="font-medium text-gray-800">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">
                       {request.name}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="bg-blue-50/50 text-slate-600 px-3 py-1 rounded-lg text-xs font-medium">
+                    <span className="bg-blue-50/50 dark:bg-blue-900/20 text-slate-600 dark:text-blue-400 px-3 py-1 rounded-lg text-xs font-medium border dark:border-blue-900/30">
                       {request.profession}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 tracking-wide text-sm">
+                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400 tracking-wide text-sm">
                     {request.phone}
                   </td>
-                  <td className="px-6 py-4 text-gray-500 text-sm">
+                  <td className="px-6 py-4 text-gray-500 dark:text-gray-500 text-sm">
                     {request.date}
                   </td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 rounded-md text-[11px] font-bold ${
                         request.status === "قيد المراجعة"
-                          ? "bg-orange-50 text-orange-400 border border-orange-100"
+                          ? "bg-orange-50 dark:bg-orange-900/20 text-orange-400 border border-orange-100 dark:border-orange-900/30"
                           : request.status === "تمت الموافقة"
-                            ? "bg-green-50 text-green-500 border border-green-100"
-                            : "bg-red-50 text-red-400 border border-red-100"
+                            ? "bg-green-50 dark:bg-green-900/20 text-green-500 border border-green-100 dark:border-green-900/30"
+                            : "bg-red-50 dark:bg-red-900/20 text-red-400 border border-red-100 dark:border-red-900/30"
                       }`}
                     >
                       {request.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <Link to={`/detailsReview/${request.id}`}
+                    <Link
+                      to={`/detailsReview/${request.id}`}
                       title="عرض التفاصيل"
-                      className="text-gray-300 hover:text-blue-500 cursor-pointer transition-all hover:scale-110"
+                      className="text-gray-300 dark:text-slate-600 hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer transition-all hover:scale-110 inline-block"
                     >
                       <IoEyeOutline size={20} />
                     </Link>
@@ -159,36 +160,46 @@ export default function ReviewOfCraftsmen() {
         </div>
 
         {/* Pagination Section */}
-        <div className="p-4 border-t border-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+        <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-1 order-2 sm:order-1">
             <button
               title="Right"
-              className="p-1 cursor-pointer border border-gray-200 rounded hover:bg-gray-50"
+              className="p-1 cursor-pointer border border-gray-200 dark:border-slate-800 rounded hover:bg-gray-50 dark:hover:bg-slate-800 dark:text-slate-500"
             >
               <HiChevronRight size={20} />
             </button>
-            <button className="w-8 h-8 cursor-pointer border border-blue-600 flex items-center justify-center rounded bg-blue-600 text-white font-bold">
+            <button className="w-8 h-8 cursor-pointer border border-blue-600 flex items-center justify-center rounded bg-blue-600 text-white font-bold shadow-sm shadow-blue-500/20">
               1
             </button>
-            <button className="w-8 h-8 cursor-pointer border border-gray-300 flex items-center justify-center rounded hover:bg-gray-50">
+            <button className="w-8 h-8 cursor-pointer border border-gray-300 dark:border-slate-800 flex items-center justify-center rounded hover:bg-gray-50 dark:hover:bg-slate-800 dark:text-slate-400 bg-white dark:bg-transparent">
               2
             </button>
-            <button className="w-8 h-8 cursor-pointer border border-gray-300 flex items-center justify-center rounded hover:bg-gray-50 text-gray-400">
+            <button className="w-8 h-8 cursor-pointer border border-gray-300 dark:border-slate-800 flex items-center justify-center rounded hover:bg-gray-50 dark:hover:bg-slate-800 dark:text-slate-500 text-gray-400 bg-white dark:bg-transparent">
               3
             </button>
-            <span className="px-1 text-gray-300">...</span>
+            <span className="px-1 text-gray-300 dark:text-slate-700">...</span>
             <button
               title="Left"
-              className="p-1 cursor-pointer border border-gray-200 rounded hover:bg-gray-50"
+              className="p-1 cursor-pointer border border-gray-200 dark:border-slate-800 rounded hover:bg-gray-50 dark:hover:bg-slate-800 dark:text-slate-500"
             >
               <HiChevronLeft size={20} />
             </button>
           </div>
 
-          <div className="order-1 sm:order-2">
-            عرض <span className="font-semibold text-gray-700">1</span> إلى{" "}
-            <span className="font-semibold text-gray-700">5</span> من أصل{" "}
-            <span className="font-semibold text-gray-700">24</span> طلب
+          <div className="order-1 sm:order-2 dark:text-slate-400">
+            عرض{" "}
+            <span className="font-semibold text-gray-700 dark:text-slate-200">
+              1
+            </span>{" "}
+            إلى{" "}
+            <span className="font-semibold text-gray-700 dark:text-slate-200">
+              5
+            </span>{" "}
+            من أصل{" "}
+            <span className="font-semibold text-gray-700 dark:text-slate-200">
+              24
+            </span>{" "}
+            طلب
           </div>
         </div>
       </div>

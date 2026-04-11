@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import {
@@ -53,28 +52,30 @@ export default function DetailsUsers() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-4 md:p-8 bg-[#f8f9fa] min-h-screen text-right"
+      className="p-4 md:p-8 bg-[#f8f9fa] dark:bg-[#0F172A] min-h-screen text-right transition-colors duration-300"
       dir="rtl"
     >
       {/* 1. Profile Header Section */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+      <div className="bg-white dark:bg-[#1E293B] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-center justify-between gap-6 mb-8 transition-colors">
         <div className="flex items-center gap-4">
           <div className="relative">
             <img
               src="https://i.pravatar.cc/150?u=1"
-              className="w-20 h-20 rounded-full border-2 border-white shadow-md object-cover"
+              className="w-20 h-20 rounded-full border-2 border-white dark:border-gray-700 shadow-md object-cover"
               alt="Profile"
             />
-            <span className="absolute bottom-1 left-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+            <span className="absolute bottom-1 left-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#1E293B] rounded-full"></span>
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-2xl font-bold text-gray-800">أحمد حسن</h1>
-              <span className="bg-green-100 text-green-600 text-xs px-2 py-0.5 rounded font-bold">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                أحمد حسن
+              </h1>
+              <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded font-bold">
                 نشط
               </span>
             </div>
-            <div className="text-gray-400 text-sm space-y-1">
+            <div className="text-gray-400 dark:text-gray-500 text-sm space-y-1 font-medium">
               <p>+20 100 123 4567</p>
               <p>المعادي، القاهرة • انضم في 12 مايو 2026</p>
             </div>
@@ -82,11 +83,11 @@ export default function DetailsUsers() {
         </div>
 
         <div className="flex gap-3 w-full md:w-auto">
-          <button className="flex-1 cursor-pointer md:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-all active:scale-95">
+          <button className="flex-1 cursor-pointer md:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-all active:scale-95">
             <FiEdit3 size={18} />
             تعديل البيانات
           </button>
-          <button className="flex-1 cursor-pointer md:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-red-100 bg-red-50/50 text-red-500 rounded-xl font-medium hover:bg-red-50 transition-all active:scale-95">
+          <button className="flex-1 cursor-pointer md:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-500 dark:text-red-400 rounded-xl font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-95">
             <MdBlock size={18} />
             حظر المستخدم
           </button>
@@ -98,33 +99,37 @@ export default function DetailsUsers() {
         <StatsCard
           title="إجمالي الطلبات"
           value="12"
-          icon={<IoCartOutline className="text-blue-500" size={26} />}
-          bgColor="bg-blue-50"
+          icon={<IoCartOutline size={26} />}
+          iconColor="text-blue-500"
+          bgColor="bg-blue-50 dark:bg-blue-900/20"
         />
         <StatsCard
           title="إجمالي المدفوعات"
           value="4,500 ج.م"
-          icon={<IoWalletOutline className="text-green-500" size={26} />}
-          bgColor="bg-green-50"
+          icon={<IoWalletOutline size={26} />}
+          iconColor="text-green-500"
+          bgColor="bg-green-50 dark:bg-green-900/20"
         />
         <StatsCard
           title="الطلبات الملغاة"
           value="1"
-          icon={<IoCloseCircleOutline className="text-red-500" size={26} />}
-          bgColor="bg-red-50"
-          isWarning
+          icon={<IoCloseCircleOutline size={26} />}
+          iconColor="text-red-500"
+          bgColor="bg-red-50 dark:bg-red-900/20"
         />
       </div>
 
       {/* 3. Orders Table Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50">
-          <h2 className="text-lg font-bold text-gray-800">سجل الطلبات</h2>
+      <div className="bg-white dark:bg-[#1E293B] rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
+        <div className="p-6 border-b border-gray-50 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+            سجل الطلبات
+          </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right">
             <thead>
-              <tr className="text-gray-400 text-sm">
+              <tr className="text-gray-400 dark:text-gray-500 text-sm">
                 <th className="px-6 py-4 font-medium">رقم الطلب</th>
                 <th className="px-6 py-4 font-medium">الخدمة</th>
                 <th className="px-6 py-4 font-medium">التاريخ</th>
@@ -133,33 +138,33 @@ export default function DetailsUsers() {
                 <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
               {orders.map((order, index) => (
                 <motion.tr
                   key={order.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="hover:bg-gray-50/50 transition-colors"
+                  className="hover:bg-gray-50/50 dark:hover:bg-[#0F172A]/50 transition-colors"
                 >
-                  <td className="px-6 py-4 font-bold text-gray-700">
+                  <td className="px-6 py-4 font-bold text-gray-700 dark:text-gray-200">
                     {order.id}
                   </td>
-                  <td className="px-6 py-4 text-gray-800 font-medium">
+                  <td className="px-6 py-4 text-gray-800 dark:text-gray-300 font-medium">
                     {order.service}
                   </td>
-                  <td className="px-6 py-4 text-gray-400 text-sm">
+                  <td className="px-6 py-4 text-gray-400 dark:text-gray-500 text-sm">
                     {order.date}
                   </td>
-                  <td className="px-6 py-4 font-bold text-gray-800">
+                  <td className="px-6 py-4 font-bold text-gray-800 dark:text-white">
                     {order.cost}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span
                       className={`px-3 py-1 rounded-lg text-xs font-bold ${
                         order.status === "مكتمل"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-red-50 text-red-400"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                          : "bg-red-50 dark:bg-red-900/20 text-red-400 dark:text-red-400"
                       }`}
                     >
                       {order.status}
@@ -167,8 +172,8 @@ export default function DetailsUsers() {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button
-                      title="IoeyeOutline"
-                      className="text-gray-300 cursor-pointer hover:text-blue-500 transition-colors"
+                      title="عرض التفاصيل"
+                      className="text-gray-300 dark:text-gray-600 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                     >
                       <IoEyeOutline size={20} />
                     </button>
@@ -183,17 +188,31 @@ export default function DetailsUsers() {
   );
 }
 
-// مكون فرعي للكروت (StatsCard) لتقليل تكرار الكود
-function StatsCard({ title, value, icon, bgColor }: { title: string; value: string; icon: React.ReactNode; bgColor: string; isWarning?: boolean }) {
+// مكون فرعي للكروت (StatsCard)
+function StatsCard({
+  title,
+  value,
+  icon,
+  bgColor,
+  iconColor,
+}: {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  bgColor: string;
+  iconColor: string;
+}) {
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+    <div className="bg-white dark:bg-[#1E293B] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between transition-colors">
       <div>
-        <p className="text-gray-400 text-sm font-medium mb-1">{title}</p>
-        <p className="text-2xl font-black text-gray-800 tracking-tight">
+        <p className="text-gray-400 dark:text-gray-500 text-sm font-medium mb-1">
+          {title}
+        </p>
+        <p className="text-2xl font-black text-gray-800 dark:text-white tracking-tight">
           {value}
         </p>
       </div>
-      <div className={`${bgColor} p-3 rounded-2xl`}>{icon}</div>
+      <div className={`${bgColor} ${iconColor} p-3 rounded-2xl`}>{icon}</div>
     </div>
   );
 }
