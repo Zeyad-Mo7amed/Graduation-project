@@ -212,29 +212,35 @@ export default function Users() {
 
         {/* Pagination Section */}
         <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-slate-500">
-          <div className="flex items-center gap-1 order-2 sm:order-1">
-            <button
-              title="HiChevronRight"
-              className="p-1 border border-gray-200 dark:border-slate-800 rounded hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              <HiChevronRight size={20} />
-            </button>
-            <button className="w-8 h-8 border border-blue-600 flex items-center justify-center rounded bg-blue-600 text-white font-bold">
-              1
-            </button>
-            <button className="w-8 h-8 border border-gray-300 dark:border-slate-800 flex items-center justify-center rounded hover:bg-gray-50 dark:hover:bg-slate-800">
-              2
-            </button>
-            <button className="w-8 h-8 border border-gray-300 dark:border-slate-800 flex items-center justify-center rounded hover:bg-gray-50 dark:hover:bg-slate-800">
-              3
-            </button>
-            <button
-              title="HiChevronLeft"
-              className="p-1 border border-gray-200 dark:border-slate-800 rounded hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              <HiChevronLeft size={20} />
-            </button>
-          </div>
+          <div className="flex items-center gap-2 order-1 md:order-2">
+                    <button
+                      title="HiChevronRight"
+                      className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+                    >
+                      <HiChevronRight size={20} />
+                    </button>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, "...", 24].map((page, i) => (
+                        <button
+                          key={i}
+                          className={`w-9 h-9 border cursor-pointer flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 
+                            ${
+                              page === 1
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100 dark:shadow-none"
+                                : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 bg-white dark:bg-[#0F172A]"
+                            }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      title="HiChevronLeft"
+                      className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+                    >
+                      <HiChevronLeft size={20} />
+                    </button>
+                  </div>
 
           <div className="order-1 sm:order-2 text-xs md:text-sm">
             عرض{" "}

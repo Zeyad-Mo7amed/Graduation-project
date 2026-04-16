@@ -131,7 +131,7 @@ export default function Home() {
           <h3 className="text-xl font-bold mb-6 text-slate-800 dark:text-white">
             معدل الطلبات اليومية
           </h3>
-          <div className="h-64">
+          <div style={{ width: "100%", height: "300px" }} className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={LINE_CHART_DATA}
@@ -258,7 +258,7 @@ const StatCard = ({
   iconBg: string;
 }) => (
   <div
-    className={`bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border-r-8 ${color} flex items-center justify-between transition-all hover:scale-[1.02] border-y border-l border-y-slate-50 border-l-slate-50 dark:border-y-transparent dark:border-l-transparent`}
+    className={`bg-white dark:bg-[#1E293B] p-6 rounded-[10px] shadow-sm border-r-8 ${color} flex items-center justify-between transition-all hover:scale-[1.02] border-y border-l border-y-slate-50 border-l-slate-50 dark:border-y-transparent dark:border-l-transparent`}
   >
     <div className={`${iconBg} p-4 rounded-2xl text-2xl transition-colors`}>
       {icon}

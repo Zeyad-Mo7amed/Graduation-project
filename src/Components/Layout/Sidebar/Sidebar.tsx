@@ -1,3 +1,4 @@
+import { CiSettings } from "react-icons/ci";
 import {
   FiX,
   FiHome,
@@ -6,7 +7,6 @@ import {
   FiUsers,
   FiBriefcase,
   FiHelpCircle,
-  FiCreditCard,
   FiLogOut,
 } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
@@ -24,7 +24,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
     { name: "إدارة المستخدمين", icon: FiUsers, path: "/users" },
     { name: "إدارة الطلبات", icon: FiBriefcase, path: "/orders" },
     { name: "الشكاوى والدعم", icon: FiHelpCircle, path: "/support" },
-    { name: "الطلبات المالية", icon: FiCreditCard, path: "/payments" },
+    { name: " الاعدادات ", icon: CiSettings, path: "/payments" },
   ];
 
   return (
@@ -46,7 +46,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         {/* Header Section */}
         <div className="flex items-center justify-between p-6 h-24 border-b border-[#E5EDF4] dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="bg-[#E7F3FF] dark:bg-[#1e293b] text-[#3B82F6] p-3 rounded-full flex items-center justify-center">
+            <div className="bg-[#E7F3FF] dark:bg-[#1e293b] text-[#3B82F6] p-3 rounded-[15px] flex items-center justify-center">
               <FiTool size={26} strokeWidth={1.5} />
             </div>
             <span className="text-2xl sm:flex md:hidden lg:flex font-bold text-black dark:text-white leading-none">

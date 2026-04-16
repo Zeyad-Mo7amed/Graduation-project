@@ -11,6 +11,11 @@ import Payments from "../Pages/Payments/Payments";
 import Details from "../Components/Shared/Details/Details";
 import DetailsUsers from "../Components/Shared/DetailsUsers/DetailsUsers";
 import DetailsReview from "../Components/Shared/DetailsReview/DetailsReview";
+import NotFound from "../Pages/Notfound/Notfound";
+import SupportDetails from "../Components/Shared/SupportDetails/SupportDetails";
+import EditAdmin from "../Components/Shared/AddAdmin/AddAdmin";
+
+
 
 export const routes = createBrowserRouter([
   {
@@ -24,8 +29,11 @@ export const routes = createBrowserRouter([
       { path: "detailsOrder/:id", element: <Details /> },
       { path: "DetailsUsers/:id", element: <DetailsUsers /> },
       { path: "DetailsReview/:id", element: <DetailsReview /> },
+      { path: "SupportDetails/:id", element: <SupportDetails /> },
+      { path: "EditAdmin/:id", element: <EditAdmin /> },
       { path: "support", element: <Support /> },
       { path: "payments", element: <Payments /> },
+      { path: "*", element: <NotFound /> },
     ],
   },
   {

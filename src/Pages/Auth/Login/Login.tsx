@@ -2,173 +2,254 @@ import { AiOutlineSafety } from "react-icons/ai";
 import { BsLightning } from "react-icons/bs";
 import { CiCircleCheck } from "react-icons/ci";
 import { MdHome } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import image from "../../../assets/d8a78d15c9e73a84c13f2eb5a78a8639ef8e0f7a.png";
 import icone from "../../../assets/Maintenance-cuate1.png";
+import * as z from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { login } from "../../../APIs/Login.api";
+import axios from "axios";
 
 export default function Login() {
+  const navigate = useNavigate();
+
+  // 1. تعريف الـ Validation Schema باستخدام Zod
+  const loginSchema = z.object({
+    email: z
+      .string()
+      .nonempty("البريد الإلكتروني مطلوب")
+      .email("برجاء إدخال بريد إلكتروني صالح"),
+    password: z
+      .string()
+      .nonempty("كلمة المرور مطلوبة")
+      .regex(
+        /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/,
+        "يجب أن تحتوي على 8 أحرف، حرف كبير، حرف صغير، رقم، ورمز خاص",
+      ),
+  });
+
+  // 2. إعداد React Hook Form مع Controller
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+  // 3. إعداد React Query (Mutation) لعملية تسجيل الدخول
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data) => login(data),
+    onSuccess: (res) => {
+      localStorage.setItem("token", res.token);
+      toast.success(`تم تسجيل الدخول بنجاح! أهلاً ${res.displayName || ""}`);
+      navigate("/");
+    },
+    onError: (err: unknown) => {
+      let errorMessage = "فشل تسجيل الدخول، تأكد من البيانات";
+
+      if (axios.isAxiosError(err)) {
+        errorMessage = err.response?.data?.message || errorMessage;
+      }
+
+      toast.error(errorMessage);
+    },
+  });
+
+  // 4. فنكشن عند عمل Submit
+  const onSubmit = (data:any) => {
+    mutate(data);
+    console.log(data);
+    
+  };
+
   return (
     <>
-      <section className="bg-white dark:bg-[#0F172A] min-h-screen transition-colors duration-300">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-          {/* Form Side */}
-          <div className="flex flex-col justify-center p-8 md:p-20 gap-8">
-            <div className="flex gap-x-3">
-              <div className="w-[47px] text-white rounded-2xl h-[47px] bg-[#2F81ED] flex items-center justify-center text-2xl shadow-lg shadow-blue-200 dark:shadow-none">
+      <section>
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          <div className="flex flex-col justify-center p-20 gap-8">
+            <div className="flex gap-x-3 ">
+              <div className="w-[47px] text-white rounded-2xl h-[47px] bg-[#2F81ED] flex items-center justify-center text-2xl">
                 <MdHome />
               </div>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
-                  حرفي
-                </h3>
-                <p className="text-sm text-[#556377] dark:text-gray-400 font-medium">
-                  لإدارة خدمات المنزل
+              <div className="">
+                <h3 className="text-2xl font-[700]">حرفي</h3>
+                <p className="text-sm text-[#556377] font-[400]">
+                  لاداره خدمات المنزل
                 </p>
               </div>
             </div>
-
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                تسجيل الدخول للوحة التحكم
+            <div className="">
+              <h2 className="text-3xl font-[700]">
+                تسجبل الدخول للوحه التحكم{" "}
               </h2>
-              <p className="text-base text-[#6A7282] dark:text-gray-400">
-                مرحباً بك مجدداً، يرجى إدخال بيانات الدخول
+              <p className="text-base text-[#6A7282]">
+                مرجبا بك مجددا برجي ادخال بيانات الدخول
               </p>
             </div>
 
             <div>
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                {/* Email Input */}
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-semibold text-[#556377] dark:text-gray-300 mb-2"
+                    className="block text-sm font-semibold text-[#556377] mb-2"
                   >
-                    البريد الإلكتروني
+                    البريد الالكتروني
                   </label>
                   <div className="relative">
-                    <input
-                      className="w-full px-4 py-3 pr-12 border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1E293B] text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#2F81ED] focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
-                      placeholder="admin@harafy.com"
-                      id="email"
-                      type="email"
+                    <Controller
                       name="email"
+                      control={control}
+                      render={({ field }) => (
+                        <input
+                          {...field}
+                          disabled={isPending}
+                          className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-100 transition-all ${
+                            errors.email
+                              ? "border-red-500"
+                              : "border-gray-200 focus:border-primary-500"
+                          }`}
+                          placeholder="admin@syanapro.com"
+                          id="email"
+                          type="email"
+                        />
+                      )}
                     />
                     <svg
-                      className="h-5 w-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
-                      fill="currentColor"
+                      data-prefix="fas"
+                      data-icon="envelope"
+                      className="h-[1em] svg-inline--fa fa-envelope absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                      role="img"
                       viewBox="0 0 512 512"
+                      aria-hidden="true"
                     >
-                      <path d="M48 64c-26.5 0-48 21.5-48 48 0 15.1 7.1 29.3 19.2 38.4l208 156c17.1 12.8 40.5 12.8 57.6 0l208-156c12.1-9.1 19.2-23.3 19.2-38.4 0-26.5-21.5-48-48-48L48 64zM0 196L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-188-198.4 148.8c-34.1 25.6-81.1 25.6-115.2 0L0 196z" />
+                      <path
+                        fill="currentColor"
+                        d="M48 64c-26.5 0-48 21.5-48 48 0 15.1 7.1 29.3 19.2 38.4l208 156c17.1 12.8 40.5 12.8 57.6 0l208-156c12.1-9.1 19.2-23.3 19.2-38.4 0-26.5-21.5-48-48-48L48 64zM0 196L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-188-198.4 148.8c-34.1 25.6-81.1 25.6-115.2 0L0 196z"
+                      />
                     </svg>
                   </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-xs mt-1 font-medium">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
+                {/* Password Input */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label
                       htmlFor="password"
-                      className="block text-sm font-semibold text-[#556377] dark:text-gray-300"
+                      className="block text-sm font-semibold text-gray-700"
                     >
-                      كلمة المرور
+                      كلمه المرور
                     </label>
                   </div>
                   <div className="relative">
-                    <input
-                      id="password"
-                      className="w-full px-4 py-3 pr-12 border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1E293B] text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-[#2F81ED] focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
-                      placeholder="••••••••"
-                      type="password"
+                    <Controller
                       name="password"
+                      control={control}
+                      render={({ field }) => (
+                        <input
+                          {...field}
+                          disabled={isPending}
+                          id="password"
+                          className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-100 transition-all ${
+                            errors.password
+                              ? "border-red-500"
+                              : "border-gray-200 focus:border-primary-500"
+                          }`}
+                          placeholder="Enter your password"
+                          type="password"
+                        />
+                      )}
                     />
                     <svg
-                      className="h-5 w-5 absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
-                      fill="currentColor"
+                      data-prefix="fas"
+                      data-icon="lock"
+                      className="h-[1em] svg-inline--fa fa-lock absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                      role="img"
                       viewBox="0 0 384 512"
+                      aria-hidden="true"
                     >
-                      <path d="M128 96l0 64 128 0 0-64c0-35.3-28.7-64-64-64s-64 28.7-64 64zM64 160l0-64C64 25.3 121.3-32 192-32S320 25.3 320 96l0 64c35.3 0 64 28.7 64 64l0 224c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 224c0-35.3 28.7-64 64-64z" />
-                    </svg>
-                    <button title="submet"
-                      type="button"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#2F81ED] transition-colors"
-                    >
-                      <svg
-                        className="h-5 w-5"
+                      <path
                         fill="currentColor"
-                        viewBox="0 0 576 512"
-                      >
-                        <path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6-46.8 43.5-78.1 95.4-93 131.1-3.3 7.9-3.3 16.7 0 24.6 14.9 35.7 46.2 87.7 93 131.1 47.1 43.7 111.8 80.6 192.6 80.6s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1 3.3-7.9 3.3-16.7 0-24.6-14.9-35.7-46.2-87.7-93-131.1-47.1-43.7-111.8-80.6-192.6-80.6zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64-11.5 0-22.3-3-31.7-8.4-1 10.9-.1 22.1 2.9 33.2 13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-12.2-45.7-55.5-74.8-101.1-70.8 5.3 9.3 8.4 20.1 8.4 31.7z" />
-                      </svg>
-                    </button>
+                        d="M128 96l0 64 128 0 0-64c0-35.3-28.7-64-64-64s-64 28.7-64 64zM64 160l0-64C64 25.3 121.3-32 192-32S320 25.3 320 96l0 64c35.3 0 64 28.7 64 64l0 224c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 224c0-35.3 28.7-64 64-64z"
+                      />
+                    </svg>
                   </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1 font-medium whitespace-pre-line">
+                      {errors.password.message}
+                    </p>
+                  )}
                   <Link
-                    className="text-sm text-[#2F81ED] hover:underline mt-2 inline-block font-medium"
+                    className="text-sm text-primary-600 hover:text-primary-700 cursor-pointer font-medium mt-2 inline-block"
                     to="/forget-password"
                   >
-                    نسيت كلمة المرور؟
+                    نسيت كلمه المرور؟
                   </Link>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full cursor-pointer bg-[#2F81ED] hover:bg-[#1e6cd4] text-white py-4 px-4 rounded-xl transition-all duration-300 font-bold text-lg shadow-lg shadow-blue-200 dark:shadow-none active:scale-[0.98]"
+                  disabled={isPending}
+                  className="w-full cursor-pointer bg-[#2F81ED] text-white py-3 px-4 rounded-[8px] hover:bg-[#0f4fa3] transition-all duration-200 font-semibold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  تسجيل الدخول
+                  {isPending ? "جاري التحقق..." : "تسجيل الدخول"}
                 </button>
               </form>
-
-              <div className="mt-10 flex gap-x-2 text-[#6A7282] dark:text-gray-400 font-medium items-center bg-gray-50 dark:bg-gray-800/50 w-fit px-4 py-2 rounded-lg">
-                <AiOutlineSafety className="text-[#0C8D62] text-xl" />
-                <span className="text-sm">
-                  نظام محمي وآمن بمديريات التشفير المتقدمة
-                </span>
-              </div>
+              <p className="mt-10 flex gap-x-2 text-[#6A7282] font-[400] items-center">
+                <AiOutlineSafety className="text-[#0C8D62]" />
+                نظام محمي وآمن بمديريات التشفير المتقدمة
+              </p>
             </div>
           </div>
 
-          {/* Visual Side */}
-          <div className="relative hidden lg:block overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src={image}
-              alt="registerImage"
-            />
-            <div className="absolute inset-0 bg-blue-900/20 backdrop-blur-[2px]"></div>
+          <div className="relative">
+            <img className="w-full" src={image} alt="registerImage" />
 
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg p-8">
-              <div className="relative flex justify-center mb-8">
-                <img
-                  src={icone}
-                  alt="registerIcone"
-                  className="relative z-10 w-64"
-                />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <img src={icone} alt="registerIcone" />
 
-                {/* Decorative Icons */}
-                <div className="absolute -right-4 top-0 -rotate-12 w-[60px] h-[60px] rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur flex items-center justify-center shadow-xl">
-                  <BsLightning className="text-3xl text-yellow-500" />
-                </div>
-                <div className="absolute -left-4 bottom-20 rotate-12 w-[60px] h-[60px] rounded-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur flex items-center justify-center shadow-xl">
-                  <svg
-                    className="text-[#2F81ED]"
-                    height="26"
-                    width="26"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                  </svg>
-                </div>
+              <div className="absolute text-[#07788A] left-0 -top-12 -rotate-6 w-[56px] h-[56px] rounded-xl p-[14px] bg-[#B6C5E9] flex items-center justify-center">
+                <svg
+                  stroke="currentColor"
+                  fill="none"
+                  strokeWidth="1.5"
+                  viewBox="0 0 24 24"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  height="26"
+                  width="26"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                </svg>
+              </div>
+              <div className="absolute -top-12  rotate-6 w-[56px] h-[56px] rounded-xl p-[14px] bg-[#B6C5E9] flex items-center justify-center">
+                <BsLightning className="text-3xl text-yellow-600" />
               </div>
 
-              <div className="text-center text-white drop-shadow-md">
-                <h2 className="text-2xl font-bold mb-4 flex justify-center items-center gap-2">
-                  <CiCircleCheck className="text-green-400 text-3xl" />
+              <div className="content text-center text-white">
+                <h2 className="text-2xl mb-3 flex justify-center items-center">
+                  <span className="me-2 text-blue-600">
+                    <CiCircleCheck />
+                  </span>
                   فريق من المحترفين
                 </h2>
-                <p className="text-lg leading-relaxed font-medium opacity-90">
-                  أفضل الكفاءات والمهنيين في خدمات الصيانة المنزلية، الكهرباء،
-                  والسباكة لضمان جودة استثنائية.
+                <p className="text-xl">
+                  افضل الكفاءه والمهنيين في خدمات الصيانه المنزليه والكهرباء
+                  والسباكه
                 </p>
               </div>
             </div>
