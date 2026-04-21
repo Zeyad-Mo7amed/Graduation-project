@@ -3,7 +3,6 @@ import {
   FaFilter,
   FaDownload,
   FaRegEye,
-  FaRegEdit,
 } from "react-icons/fa";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi2";
 import { motion } from "framer-motion";
