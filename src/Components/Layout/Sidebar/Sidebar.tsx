@@ -9,8 +9,7 @@ import {
   FiHelpCircle,
   FiLogOut,
 } from "react-icons/fi";
-import { Link, useLocation } from "react-router-dom";
-
+import { Link, useLocation, useNavigate } from "react-router-dom"; 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -18,6 +17,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const navItems = [
     { name: "الرئيسية", icon: FiHome, path: "/" },
     { name: "مراجعة الحرفيين", icon: FiUser, path: "/review" },
@@ -27,9 +27,15 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
     { name: " الاعدادات ", icon: CiSettings, path: "/payments" },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/auth/login");
+    window.location.reload();
+  };
+
   return (
     <>
-      {/* Overlay - Darkened more in dark mode */}
+
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/30 dark:bg-black/60 z-40 md:hidden transition-opacity"
@@ -37,13 +43,12 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         ></div>
       )}
 
-      {/* Main Sidebar Container */}
       <div
         className={`fixed md:sticky inset-y-0 right-0 z-50 w-auto bg-white dark:bg-[#111827] transform transition-transform duration-300 
           ${isOpen ? "translate-x-0" : "translate-x-full"} 
           md:translate-x-0 shadow-sm border-l border-[#E5EDF4] dark:border-gray-800 flex flex-col h-screen`}
       >
-        {/* Header Section */}
+
         <div className="flex items-center justify-between p-6 h-24 border-b border-[#E5EDF4] dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-3">
             <div className="bg-[#E7F3FF] dark:bg-[#1e293b] text-[#3B82F6] p-3 rounded-[15px] flex items-center justify-center">
@@ -56,13 +61,12 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           <button
             title="إغلاق"
             onClick={toggleSidebar}
-            className="md:hidden text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
+            className="md:hidden cursor-pointer text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors"
           >
             <FiX size={24} />
           </button>
         </div>
 
-        {/* Navigation Items */}
         <nav className="flex-1 p-6 space-y-3 mt-1 overflow-y-auto">
           {navItems.map((item, index) => {
             const Icon = item.icon;
@@ -87,11 +91,11 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
           })}
         </nav>
 
-        {/* Footer / Logout */}
+
         <div className="p-6 border-t border-[#E5EDF4] dark:border-gray-800 mt-auto">
           <button
-            className="flex items-center gap-4 p-4 w-full text-[#DC2626] dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors h-[60px]"
-            onClick={() => console.log("Logging out...")}
+            className="flex items-center gap-4 p-4 w-full text-[#DC2626] dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors h-[60px] cursor-pointer"
+            onClick={handleLogout}
           >
             <FiLogOut size={22} className="shrink-0 " />
             <span className="text-lg sm:flex md:hidden lg:flex font-medium">

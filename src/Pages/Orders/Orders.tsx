@@ -85,11 +85,11 @@ export default function Orders() {
               className="pr-11 pl-4 py-2.5 bg-gray-50/50 dark:bg-[#0F172A] border border-gray-200 dark:border-slate-800 dark:text-white rounded-2xl text-sm w-full md:w-64 lg:w-72 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-gray-400"
             />
           </div>
-          <button className="flex items-center justify-center gap-2 flex-1 md:flex-none px-4 py-2.5 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 hover:text-blue-600 active:scale-95 transition-all duration-200">
+          <button className="flex cursor-pointer items-center justify-center gap-2 flex-1 md:flex-none px-4 py-2.5 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 hover:text-blue-600 active:scale-95 transition-all duration-200">
             <FaFilter className="text-xs" />
             تصفية
           </button>
-          <button className="flex items-center justify-center gap-2 flex-1 md:flex-none px-4 py-2.5 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-green-400 hover:text-green-600 active:scale-95 transition-all duration-200">
+          <button className="flex cursor-pointer items-center justify-center gap-2 flex-1 md:flex-none px-4 py-2.5 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-green-400 hover:text-green-600 active:scale-95 transition-all duration-200">
             <FaDownload className="text-xs" />
             تصدير
           </button>
@@ -160,12 +160,6 @@ export default function Orders() {
                         <FaRegEye size={18} />
                       </Link>
                     </motion.div>
-                    <button
-                      title="FaRegEdit"
-                      className="p-2 text-gray-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
-                    >
-                      <FaRegEdit size={18} />
-                    </button>
                   </div>
                 </td>
               </motion.tr>
@@ -176,21 +170,6 @@ export default function Orders() {
 
       {/* Pagination Section */}
       <div className="flex flex-col md:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-50 dark:border-slate-800 gap-6">
-        <div className="text-sm font-medium order-2 md:order-1">
-          <span className="text-gray-400 dark:text-slate-500">عرض </span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            1
-          </span>
-          <span className="text-gray-400 dark:text-slate-500"> إلى </span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            6
-          </span>
-          <span className="text-gray-400 dark:text-slate-500"> من أصل </span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            1,024
-          </span>
-        </div>
-
         <div className="flex items-center gap-2 order-1 md:order-2">
           <button
             title="HiChevronRight"
@@ -219,6 +198,21 @@ export default function Orders() {
           >
             <HiChevronLeft size={20} />
           </button>
+        </div>
+
+        <div className="text-sm font-medium order-2 md:order-1">
+          <span className="text-gray-400 dark:text-slate-500">عرض </span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
+            1
+          </span>
+          <span className="text-gray-400 dark:text-slate-500"> إلى </span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
+            6
+          </span>
+          <span className="text-gray-400 dark:text-slate-500"> من أصل </span>
+          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
+            1,024
+          </span>
         </div>
       </div>
     </motion.div>

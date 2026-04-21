@@ -14,13 +14,18 @@ import DetailsReview from "../Components/Shared/DetailsReview/DetailsReview";
 import NotFound from "../Pages/Notfound/Notfound";
 import SupportDetails from "../Components/Shared/SupportDetails/SupportDetails";
 import EditAdmin from "../Components/Shared/AddAdmin/AddAdmin";
+import MainRotectedRout from "../Components/Guard/MainRotectedRoute/MainRotectedRout";
 
 
 
 export const routes = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <MainRotectedRout>
+        <MainLayout />
+      </MainRotectedRout>
+    ),
     children: [
       { index: true, element: <Home /> },
       { path: "review", element: <ReviewOfCraftsmen /> },
@@ -42,3 +47,4 @@ export const routes = createBrowserRouter([
     children: [{ path: "login", element: <Login /> }],
   },
 ]);
+

@@ -246,7 +246,7 @@ export default function Details() {
                 to={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 left-4 z-[9999] bg-white dark:bg-[#1E293B] text-blue-600 dark:text-blue-400 px-3 py-2 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-blue-50 dark:border-gray-700 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 opacity-100"
+                className="absolute top-4 left-15 z-[9999] bg-white dark:bg-[#1E293B] text-blue-600 dark:text-blue-400 px-3 py-2 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-blue-50 dark:border-gray-700 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 opacity-100"
               >
                 تتبع في خرائط جوجل <FiExternalLink />
               </Link>

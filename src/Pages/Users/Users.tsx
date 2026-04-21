@@ -2,7 +2,6 @@ import {
   IoEyeOutline,
   IoSearchOutline,
   IoFilter,
-  IoAdd,
 } from "react-icons/io5";
 import { MdBlock } from "react-icons/md";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi";
@@ -98,10 +97,6 @@ export default function Users() {
         </div>
 
         <div className="flex gap-2 w-full lg:w-auto">
-          <button className="flex-1 lg:flex-none bg-[#3b82f6] cursor-pointer hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-95 text-sm md:text-base">
-            <IoAdd size={20} />
-            <span className="whitespace-nowrap">إضافة مستخدم</span>
-          </button>
           <button className="border cursor-pointer border-gray-200 dark:border-slate-800 bg-white dark:bg-[#1E293B] text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-95">
             <IoFilter size={18} />
             <span>تصفية</span>

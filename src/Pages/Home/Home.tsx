@@ -11,43 +11,14 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { FiUsers, FiTool, FiCheckCircle, FiDollarSign } from "react-icons/fi";
+import { FiUsers, FiTool, FiCheckCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
+import { getClientsCount } from "../../APIs/getClientsCount.api";
+import { useQuery } from "@tanstack/react-query";
+import { getCountTechnicians } from "../../APIs/getCountTechnicians.api";
+import Loading from "../../Components/Shared/Loading/Loading";
 
-const STATS_CARDS = [
-  {
-    id: 1,
-    title: "إجمالي المستخدمين",
-    value: "1,250",
-    icon: <FiUsers />,
-    color: "border-blue-500",
-    iconBg: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
-  },
-  {
-    id: 2,
-    title: "عدد الحرفيين",
-    value: "340",
-    icon: <FiTool />,
-    color: "border-sky-500",
-    iconBg: "bg-sky-50 dark:bg-sky-900/20 text-sky-500",
-  },
-  {
-    id: 3,
-    title: "الطلبات المكتملة",
-    value: "8,420",
-    icon: <FiCheckCircle />,
-    color: "border-purple-500",
-    iconBg: "bg-purple-50 dark:bg-purple-900/20 text-purple-500",
-  },
-  {
-    id: 4,
-    title: "إجمالي الأرباح",
-    value: "45,000 ج.م",
-    icon: <FiDollarSign />,
-    color: "border-emerald-500",
-    iconBg: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500",
-  },
-];
+// --- الثوابت اللي كانت ناقصة رجعتها تاني عشان الـ Error يروح ---
 
 const PENDING_CRAFTSMEN = [
   { id: 101, name: "محمد أحمد", craft: "سباكة" },
@@ -106,7 +77,50 @@ const itemAnim = {
   visible: { opacity: 1, y: 0 },
 };
 
+
 export default function Home() {
+  const { data: clientsData, isLoading: isLoadingClients } = useQuery({
+    queryKey: ["clientsCount"],
+    queryFn: getClientsCount,
+  });
+
+  const { data: techData, isLoading: isLoadingTech } = useQuery({
+    queryKey: ["CountTechnicians"],
+    queryFn: getCountTechnicians,
+  });
+
+  if(isLoadingClients && isLoadingTech) {
+    return <Loading/>
+  }
+
+
+  const DYNAMIC_STATS_CARDS = [
+    {
+      id: 1,
+      title: "إجمالي المستخدمين",
+      value: isLoadingClients ? "..." : clientsData?.count?.toString() || "0",
+      icon: <FiUsers />,
+      color: "border-blue-500",
+      iconBg: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
+    },
+    {
+      id: 2,
+      title: "عدد الحرفيين",
+      value: isLoadingTech ? "..." : techData?.count?.toString() || "0",
+      icon: <FiTool />,
+      color: "border-sky-500",
+      iconBg: "bg-sky-50 dark:bg-sky-900/20 text-sky-500",
+    },
+    {
+      id: 3,
+      title: "الطلبات المكتملة",
+      value: "8,420",
+      icon: <FiCheckCircle />,
+      color: "border-purple-500",
+      iconBg: "bg-purple-50 dark:bg-purple-900/20 text-purple-500",
+    },
+  ];
+
   return (
     <motion.div
       initial="hidden"
@@ -115,23 +129,24 @@ export default function Home() {
       dir="rtl"
       className="space-y-6 p-4 bg-[#F0F5FA] dark:bg-[#0F172A] min-h-screen transition-colors duration-300"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {STATS_CARDS.map((item) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {DYNAMIC_STATS_CARDS.map((item) => (
           <motion.div key={item.id} variants={itemAnim}>
             <StatCard {...item} />
           </motion.div>
         ))}
       </div>
 
+      {/* قسم الرسوم البيانية */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div
           variants={itemAnim}
-          className="lg:col-span-2 bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors"
+          className="lg:col-span-2 bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800"
         >
           <h3 className="text-xl font-bold mb-6 text-slate-800 dark:text-white">
             معدل الطلبات اليومية
           </h3>
-          <div style={{ width: "100%", height: "300px" }} className="h-64">
+          <div style={{ width: "100%", height: "300px", minWidth: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={LINE_CHART_DATA}
@@ -170,8 +185,8 @@ export default function Home() {
                   type="monotone"
                   dataKey="value"
                   stroke="#3B82F6"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "#3B82F6" }}
+                  strokeWidth={1.5}
+                  dot={{ r: 3, fill: "#3B82F6" }}
                   animationDuration={2000}
                 />
               </LineChart>
@@ -181,7 +196,7 @@ export default function Home() {
 
         <motion.div
           variants={itemAnim}
-          className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center transition-colors"
+          className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center"
         >
           <h3 className="text-xl font-bold mb-6 w-full text-right text-slate-800 dark:text-white">
             أكثر الحرف المطلوبة
@@ -191,7 +206,7 @@ export default function Home() {
               <PieChart>
                 <Pie
                   data={PIE_CHART_DATA}
-                  innerRadius={60}
+                  innerRadius={72}
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="value"
@@ -223,6 +238,7 @@ export default function Home() {
         </motion.div>
       </div>
 
+      {/* قسم القوائم */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div variants={itemAnim}>
           <ListContainer title="طلبات انضمام معلقة">
@@ -244,43 +260,25 @@ export default function Home() {
   );
 }
 
-const StatCard = ({
-  title,
-  value,
-  icon,
-  color,
-  iconBg,
-}: {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  color: string;
-  iconBg: string;
-}) => (
+// --- المكونات الفرعية (Sub-components) ---
+
+const StatCard = ({ title, value, icon, color, iconBg }: any) => (
   <div
     className={`bg-white dark:bg-[#1E293B] p-6 rounded-[10px] shadow-sm border-r-8 ${color} flex items-center justify-between transition-all hover:scale-[1.02] border-y border-l border-y-slate-50 border-l-slate-50 dark:border-y-transparent dark:border-l-transparent`}
   >
-    <div className={`${iconBg} p-4 rounded-2xl text-2xl transition-colors`}>
-      {icon}
-    </div>
+    <div className={`${iconBg} p-4 rounded-2xl text-2xl`}>{icon}</div>
     <div className="text-left">
       <p className="text-slate-400 dark:text-slate-500 text-sm font-bold mb-1">
         {title}
       </p>
-      <h4 className=" font-black text-slate-800 dark:text-white text-right">
+      <h4 className="font-black text-slate-800 dark:text-white text-right">
         {value}
       </h4>
     </div>
   </div>
 );
 
-const ListContainer = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
+const ListContainer = ({ title, children }: any) => (
   <div className="space-y-4">
     <h3 className="text-xl font-black text-slate-800 dark:text-white mr-2">
       {title}
@@ -289,7 +287,7 @@ const ListContainer = ({
   </div>
 );
 
-const JoinRequestItem = ({ name, craft }: { name: string; craft: string }) => (
+const JoinRequestItem = ({ name, craft }: any) => (
   <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all">
     <div className="flex items-center gap-4">
       <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400">
@@ -303,29 +301,17 @@ const JoinRequestItem = ({ name, craft }: { name: string; craft: string }) => (
       </div>
     </div>
     <div className="flex gap-2">
-      <button className="bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors">
+      <button className="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700">
         قبول
       </button>
-      <button className="bg-red-50 dark:bg-red-900/10 cursor-pointer text-red-500 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors">
+      <button className="bg-red-50 dark:bg-red-900/10 text-red-500 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100">
         رفض
       </button>
     </div>
   </div>
 );
 
-const OrderItem = ({
-  id,
-  client,
-  technician,
-  status,
-  statusColor,
-}: {
-  id: string;
-  client: string;
-  technician: string;
-  status: string;
-  statusColor: string;
-}) => (
+const OrderItem = ({ id, client, technician, status, statusColor }: any) => (
   <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all">
     <div className="flex flex-col text-right">
       <span className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">
@@ -338,9 +324,7 @@ const OrderItem = ({
         الحرفي: {technician}
       </p>
     </div>
-    <span
-      className={`${statusColor} px-4 py-2 rounded-xl text-xs font-black transition-colors`}
-    >
+    <span className={`${statusColor} px-4 py-2 rounded-xl text-xs font-black`}>
       {status}
     </span>
   </div>
