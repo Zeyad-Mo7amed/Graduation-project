@@ -9,9 +9,9 @@ import * as z from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import toast from "react-hot-toast";
 import { login } from "../../../APIs/Login.api";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const navigate = useNavigate();

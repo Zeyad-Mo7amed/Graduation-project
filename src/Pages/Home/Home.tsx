@@ -98,7 +98,7 @@ export default function Home() {
     {
       id: 1,
       title: "إجمالي المستخدمين",
-      value: isLoadingClients ? "..." : clientsData?.count?.toString() || "0",
+      value: isLoadingClients ? "..." : clientsData + techData,
       icon: <FiUsers />,
       color: "border-blue-500",
       iconBg: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
@@ -106,7 +106,7 @@ export default function Home() {
     {
       id: 2,
       title: "عدد الحرفيين",
-      value: isLoadingTech ? "..." : techData?.count?.toString() || "0",
+      value: isLoadingTech ? "..." : techData,
       icon: <FiTool />,
       color: "border-sky-500",
       iconBg: "bg-sky-50 dark:bg-sky-900/20 text-sky-500",
