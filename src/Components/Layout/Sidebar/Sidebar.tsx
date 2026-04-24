@@ -1,4 +1,3 @@
-import { CiSettings } from "react-icons/ci";
 import {
   FiX,
   FiHome,
