@@ -122,6 +122,7 @@ export default function Home() {
   ];
 
   return (
+    
     <motion.div
       initial="hidden"
       animate="visible"
