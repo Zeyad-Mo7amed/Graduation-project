@@ -24,7 +24,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
     { name: "إدارة المستخدمين", icon: FiUsers, path: "/users" },
     { name: "إدارة الطلبات", icon: FiBriefcase, path: "/orders" },
     { name: "الشكاوى والدعم", icon: FiHelpCircle, path: "/support" },
-    { name: " الاعدادات ", icon: CiSettings, path: "/payments" },
   ];
 
   const handleLogout = () => {
