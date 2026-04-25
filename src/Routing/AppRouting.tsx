@@ -13,6 +13,7 @@ import DetailsReview from "../Components/Shared/DetailsReview/DetailsReview";
 import NotFound from "../Pages/Notfound/Notfound";
 import SupportDetails from "../Components/Shared/SupportDetails/SupportDetails";
 import MainRotectedRout from "../Components/Guard/MainRotectedRoute/MainRotectedRout";
+import ReviewTheRatings from "../Pages/ReviewTheRatings/ReviewTheRatings";
 
 
 
@@ -34,6 +35,7 @@ export const routes = createBrowserRouter([
       { path: "DetailsReview/:id", element: <DetailsReview /> },
       { path: "SupportDetails/:id", element: <SupportDetails /> },
       { path: "support", element: <Support /> },
+      { path: "ReviewTheRatings", element: <ReviewTheRatings /> },
       { path: "*", element: <NotFound /> },
     ],
   },

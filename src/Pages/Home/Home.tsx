@@ -17,9 +17,6 @@ import { getClientsCount } from "../../APIs/getClientsCount.api";
 import { useQuery } from "@tanstack/react-query";
 import { getCountTechnicians } from "../../APIs/getCountTechnicians.api";
 import Loading from "../../Components/Shared/Loading/Loading";
-
-// --- الثوابت اللي كانت ناقصة رجعتها تاني عشان الـ Error يروح ---
-
 const PENDING_CRAFTSMEN = [
   { id: 101, name: "محمد أحمد", craft: "سباكة" },
   { id: 102, name: "سارة محمود", craft: "تنظيف" },
@@ -261,7 +258,6 @@ export default function Home() {
   );
 }
 
-// --- المكونات الفرعية (Sub-components) ---
 
 const StatCard = ({ title, value, icon, color, iconBg }: any) => (
   <div

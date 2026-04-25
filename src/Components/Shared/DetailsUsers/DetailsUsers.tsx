@@ -1,12 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  IoEyeOutline,
   IoWalletOutline,
   IoCartOutline,
   IoCloseCircleOutline,
 } from "react-icons/io5";
-import { FiEdit3 } from "react-icons/fi";
 import { MdBlock } from "react-icons/md";
 
 const orders = [
@@ -83,10 +81,6 @@ export default function DetailsUsers() {
         </div>
 
         <div className="flex gap-3 w-full md:w-auto">
-          <button className="flex-1 cursor-pointer md:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-[#0F172A] transition-all active:scale-95">
-            <FiEdit3 size={18} />
-            تعديل البيانات
-          </button>
           <button className="flex-1 cursor-pointer md:flex-none flex items-center justify-center gap-2 px-6 py-2 border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-500 dark:text-red-400 rounded-xl font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-95">
             <MdBlock size={18} />
             حظر المستخدم
@@ -135,7 +129,6 @@ export default function DetailsUsers() {
                 <th className="px-6 py-4 font-medium">التاريخ</th>
                 <th className="px-6 py-4 font-medium">التكلفة</th>
                 <th className="px-6 py-4 font-medium text-center">الحالة</th>
-                <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -169,14 +162,6 @@ export default function DetailsUsers() {
                     >
                       {order.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      title="عرض التفاصيل"
-                      className="text-gray-300 dark:text-gray-600 cursor-pointer hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                    >
-                      <IoEyeOutline size={20} />
-                    </button>
                   </td>
                 </motion.tr>
               ))}
