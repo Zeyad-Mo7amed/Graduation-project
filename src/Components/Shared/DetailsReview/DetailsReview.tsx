@@ -15,7 +15,8 @@ import NotFoundData from "../NotFoundData/NotFoundData";
 export default function DetailsReview() {
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
   const { id } = useParams();
-
+  console.log(id);
+  
   const { data, isLoading } = useQuery({
     queryKey: ["technicianDetails", id],
     queryFn: () => getTechnicianDetails(id as string),

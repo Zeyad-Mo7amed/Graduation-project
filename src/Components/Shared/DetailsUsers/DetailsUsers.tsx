@@ -67,7 +67,8 @@ const orders = [
 
 export default function DetailsUsers() {
   const { id } = useParams<{ id: string }>();
-
+  console.log(id);
+  
   const { data, isLoading } = useQuery<ClientData>({
     queryKey: ["GetClientDetails", id],
     queryFn: () => GetClientDetails(id as string),
