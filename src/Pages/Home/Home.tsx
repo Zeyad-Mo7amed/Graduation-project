@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -17,11 +18,23 @@ import { getClientsCount } from "../../APIs/getClientsCount.api";
 import { useQuery } from "@tanstack/react-query";
 import { getCountTechnicians } from "../../APIs/getCountTechnicians.api";
 import Loading from "../../Components/Shared/Loading/Loading";
-const PENDING_CRAFTSMEN = [
-  { id: 101, name: "محمد أحمد", craft: "سباكة" },
-  { id: 102, name: "سارة محمود", craft: "تنظيف" },
-  { id: 103, name: "خالد عبد الله", craft: "نجارة" },
+import { getAllTechnicians } from "../../APIs/GetAllTechnicians.api";
+import type { StatCardProps, Technician } from "../../interfaces/interfaces";
+import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
+
+const COLORS = [
+  "#3B82F6",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#8B5CF6",
+  "#EC4899",
 ];
+
+const itemAnim = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const LATEST_ORDERS = [
   {
@@ -40,40 +53,7 @@ const LATEST_ORDERS = [
     statusColor:
       "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
   },
-  {
-    id: "#1211",
-    client: "منى سامي",
-    technician: "هاني سعيد",
-    status: "قيد التنفيذ",
-    statusColor:
-      "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
-  },
 ];
-
-const LINE_CHART_DATA = [
-  { name: "السبت", value: 120 },
-  { name: "الأحد", value: 140 },
-  { name: "الإثنين", value: 110 },
-  { name: "الثلاثاء", value: 170 },
-  { name: "الأربعاء", value: 90 },
-  { name: "الخميس", value: 230 },
-  { name: "الجمعة", value: 210 },
-];
-
-const PIE_CHART_DATA = [
-  { name: "سباكة", value: 400 },
-  { name: "نجارة", value: 300 },
-  { name: "كهرباء", value: 300 },
-  { name: "تنظيف", value: 200 },
-];
-
-const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444"];
-
-const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
 
 export default function Home() {
   const { data: clientsData, isLoading: isLoadingClients } = useQuery({
@@ -86,16 +66,69 @@ export default function Home() {
     queryFn: getCountTechnicians,
   });
 
-  if(isLoadingClients && isLoadingTech) {
-    return <Loading/>
+  const { data: allTechData, isLoading: isLoadingAllTech } = useQuery<
+    Technician[]
+  >({
+    queryKey: ["GetAllTechnicians"],
+    queryFn: getAllTechnicians,
+  });
+  
+
+  const dynamicLineData = useMemo(() => {
+    const days = [
+      "الأحد",
+      "الإثنين",
+      "الثلاثاء",
+      "الأربعاء",
+      "الخميس",
+      "الجمعة",
+      "السبت",
+    ];
+    const counts: Record<string, number> = {};
+    days.forEach((day) => (counts[day] = 0));
+
+    allTechData?.forEach((tech) => {
+      const dayName = new Date(tech.createdAt).toLocaleDateString("ar-EG", {
+        weekday: "long",
+      });
+      if (counts[dayName] !== undefined) counts[dayName]++;
+    });
+    return days.map((name) => ({ name, value: counts[name] }));
+  }, [allTechData]);
+
+  const dynamicPieData = useMemo(() => {
+    if (!allTechData) return [];
+    const categories = allTechData.reduce(
+      (acc: Record<string, number>, curr) => {
+        acc[curr.serviceCategory] = (acc[curr.serviceCategory] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+    return Object.entries(categories).map(([name, value]) => ({ name, value }));
+  }, [allTechData]);
+
+  const pendingTechnicians = useMemo(() => {
+    return allTechData?.filter((tech) => !tech.isActive).slice(0, 3) || [];
+  }, [allTechData]);
+
+  if (isLoadingClients || isLoadingTech || isLoadingAllTech) return <Loading />;
+
+  const hasData = allTechData && allTechData.length > 0;
+
+  if (!hasData) {
+    return (
+      <NotFoundData/>
+    );
   }
 
+  const totalUsers = (clientsData || 0) + (techData || 0);
 
-  const DYNAMIC_STATS_CARDS = [
+  const DYNAMIC_STATS_CARDS: (StatCardProps & { id: number })[] = [
     {
       id: 1,
       title: "إجمالي المستخدمين",
-      value: isLoadingClients ? "..." : clientsData + techData,
+      value: totalUsers.toLocaleString(),
       icon: <FiUsers />,
       color: "border-blue-500",
       iconBg: "bg-blue-50 dark:bg-blue-900/20 text-blue-500",
@@ -103,7 +136,7 @@ export default function Home() {
     {
       id: 2,
       title: "عدد الحرفيين",
-      value: isLoadingTech ? "..." : techData,
+      value: techData || 0,
       icon: <FiTool />,
       color: "border-sky-500",
       iconBg: "bg-sky-50 dark:bg-sky-900/20 text-sky-500",
@@ -111,7 +144,8 @@ export default function Home() {
     {
       id: 3,
       title: "الطلبات المكتملة",
-      value: "8,420",
+      value:
+        allTechData?.reduce((acc, curr) => acc + curr.completedJobs, 0) || "0",
       icon: <FiCheckCircle />,
       color: "border-purple-500",
       iconBg: "bg-purple-50 dark:bg-purple-900/20 text-purple-500",
@@ -119,7 +153,6 @@ export default function Home() {
   ];
 
   return (
-    
     <motion.div
       initial="hidden"
       animate="visible"
@@ -135,19 +168,18 @@ export default function Home() {
         ))}
       </div>
 
-      {/* قسم الرسوم البيانية */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div
           variants={itemAnim}
           className="lg:col-span-2 bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800"
         >
           <h3 className="text-xl font-bold mb-6 text-slate-800 dark:text-white">
-            معدل الطلبات اليومية
+            معدل انضمام الحرفيين
           </h3>
           <div style={{ width: "100%", height: "300px", minWidth: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
-                data={LINE_CHART_DATA}
+                data={dynamicLineData}
                 margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
                 <CartesianGrid
@@ -176,7 +208,6 @@ export default function Home() {
                     color: "#fff",
                     borderRadius: "12px",
                   }}
-                  itemStyle={{ color: "#3B82F6" }}
                 />
                 <Legend verticalAlign="bottom" height={36} />
                 <Line
@@ -185,7 +216,6 @@ export default function Home() {
                   stroke="#3B82F6"
                   strokeWidth={1.5}
                   dot={{ r: 3, fill: "#3B82F6" }}
-                  animationDuration={2000}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -197,20 +227,20 @@ export default function Home() {
           className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center"
         >
           <h3 className="text-xl font-bold mb-6 w-full text-right text-slate-800 dark:text-white">
-            أكثر الحرف المطلوبة
+            توزيع تخصصات الحرفيين
           </h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={PIE_CHART_DATA}
+                  data={dynamicPieData}
                   innerRadius={72}
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="value"
                   stroke="none"
                 >
-                  {PIE_CHART_DATA.map((_, index) => (
+                  {dynamicPieData.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -236,13 +266,22 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* قسم القوائم */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <motion.div variants={itemAnim}>
           <ListContainer title="طلبات انضمام معلقة">
-            {PENDING_CRAFTSMEN.map((person) => (
-              <JoinRequestItem key={person.id} {...person} />
-            ))}
+            {pendingTechnicians.length > 0 ? (
+              pendingTechnicians.map((tech) => (
+                <JoinRequestItem
+                  key={tech.userId}
+                  name={tech.fullname}
+                  craft={tech.serviceCategory}
+                />
+              ))
+            ) : (
+              <p className="bg-white dark:bg-[#1E293B] p-8 text-center text-slate-400 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 font-bold">
+                لا توجد طلبات معلقة
+              </p>
+            )}
           </ListContainer>
         </motion.div>
 
@@ -258,10 +297,11 @@ export default function Home() {
   );
 }
 
+// --- المكونات الفرعية (نفس الديزاين بدون تغيير شبر) ---
 
-const StatCard = ({ title, value, icon, color, iconBg }: any) => (
+const StatCard = ({ title, value, icon, color, iconBg }: StatCardProps) => (
   <div
-    className={`bg-white dark:bg-[#1E293B] p-6 rounded-[10px] shadow-sm border-r-8 ${color} flex items-center justify-between transition-all hover:scale-[1.02] border-y border-l border-y-slate-50 border-l-slate-50 dark:border-y-transparent dark:border-l-transparent`}
+    className={`bg-white dark:bg-[#1E293B] p-6 rounded-[10px] shadow-sm border-r-8 ${color} flex items-center justify-between transition-all hover:scale-[1.02] border-y border-l border-slate-50 dark:border-slate-800`}
   >
     <div className={`${iconBg} p-4 rounded-2xl text-2xl`}>{icon}</div>
     <div className="text-left">
@@ -275,7 +315,13 @@ const StatCard = ({ title, value, icon, color, iconBg }: any) => (
   </div>
 );
 
-const ListContainer = ({ title, children }: any) => (
+const ListContainer = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
   <div className="space-y-4">
     <h3 className="text-xl font-black text-slate-800 dark:text-white mr-2">
       {title}
@@ -284,13 +330,13 @@ const ListContainer = ({ title, children }: any) => (
   </div>
 );
 
-const JoinRequestItem = ({ name, craft }: any) => (
-  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all">
+const JoinRequestItem = ({ name, craft }: { name: string; craft: string }) => (
+  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all text-right">
     <div className="flex items-center gap-4">
       <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400">
         {name[0]}
       </div>
-      <div className="text-right">
+      <div>
         <p className="font-bold text-slate-800 dark:text-gray-200">{name}</p>
         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
           {craft}
@@ -298,19 +344,19 @@ const JoinRequestItem = ({ name, craft }: any) => (
       </div>
     </div>
     <div className="flex gap-2">
-      <button className="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700">
+      <button className="bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700">
         قبول
       </button>
-      <button className="bg-red-50 dark:bg-red-900/10 text-red-500 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100">
+      <button className="bg-red-50 cursor-pointer dark:bg-red-900/10 text-red-500 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100">
         رفض
       </button>
     </div>
   </div>
 );
 
-const OrderItem = ({ id, client, technician, status, statusColor }: any) => (
-  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all">
-    <div className="flex flex-col text-right">
+const OrderItem = ({ id, client, technician, status, statusColor }: {id:string, client:string, technician:string, status:string, statusColor:string}) => (
+  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all text-right">
+    <div className="flex flex-col">
       <span className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">
         {id}
       </span>

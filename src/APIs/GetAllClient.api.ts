@@ -1,9 +1,9 @@
 import axios from "axios";
 
-export const getCountTechnicians = async () => {
+export const GetAllClient = async () => {
   const token = localStorage.getItem("token");
   const { data } = await axios.get(
-    "https://herafy.runasp.net/api/Admin/CountTechnicians",
+    "https://herafy.runasp.net/api/Admin/GetAllClient",
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -11,7 +11,5 @@ export const getCountTechnicians = async () => {
       },
     },
   );
-
-  console.log("data", data);
   return data;
 };

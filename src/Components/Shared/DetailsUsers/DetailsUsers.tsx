@@ -6,6 +6,26 @@ import {
   IoCloseCircleOutline,
 } from "react-icons/io5";
 import { MdBlock } from "react-icons/md";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { GetClientDetails } from "../../../APIs/GetClientDetails..api";
+import Loading from "../Loading/Loading";
+import NotFoundData from "../NotFoundData/NotFoundData";
+
+// 1. تعريف النوع الخاص ببيانات العميل القادمة من الـ API
+interface ClientData {
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  city: string;
+  government: string;
+  profileImageURL: string;
+  isActive: boolean;
+  numberOfOrder: number;
+  createdAt: string;
+  latitude?: number;
+  longitude?: number;
+}
 
 const orders = [
   {
@@ -46,6 +66,27 @@ const orders = [
 ];
 
 export default function DetailsUsers() {
+  const { id } = useParams<{ id: string }>();
+
+  const { data, isLoading } = useQuery<ClientData>({
+    queryKey: ["GetClientDetails", id],
+    queryFn: () => GetClientDetails(id as string),
+    enabled: !!id,
+  });
+
+  if (isLoading) return <Loading />;
+  if (!data) return <NotFoundData />;
+
+  // دالة بسيطة لتنسيق التاريخ القادم من الـ API
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ar-EG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -58,24 +99,35 @@ export default function DetailsUsers() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <img
-              src="https://i.pravatar.cc/150?u=1"
+              src={data.profileImageURL || "https://i.pravatar.cc/150"}
               className="w-20 h-20 rounded-full border-2 border-white dark:border-gray-700 shadow-md object-cover"
-              alt="Profile"
+              alt={data.fullName}
             />
-            <span className="absolute bottom-1 left-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#1E293B] rounded-full"></span>
+            {data.isActive && (
+              <span className="absolute bottom-1 left-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-[#1E293B] rounded-full"></span>
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                أحمد حسن
+                {data.fullName}
               </h1>
-              <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs px-2 py-0.5 rounded font-bold">
-                نشط
+              <span
+                className={`${
+                  data.isActive
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-500"
+                } text-xs px-2 py-0.5 rounded font-bold`}
+              >
+                {data.isActive ? "نشط" : "غير نشط"}
               </span>
             </div>
             <div className="text-gray-400 dark:text-gray-500 text-sm space-y-1 font-medium">
-              <p>+20 100 123 4567</p>
-              <p>المعادي، القاهرة • انضم في 12 مايو 2026</p>
+              <p>{data.phoneNumber}</p>
+              <p>
+                {data.city}، {data.government} • انضم في{" "}
+                {formatDate(data.createdAt)}
+              </p>
             </div>
           </div>
         </div>
@@ -92,21 +144,21 @@ export default function DetailsUsers() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatsCard
           title="إجمالي الطلبات"
-          value="12"
+          value={data.numberOfOrder.toString()}
           icon={<IoCartOutline size={26} />}
           iconColor="text-blue-500"
           bgColor="bg-blue-50 dark:bg-blue-900/20"
         />
         <StatsCard
           title="إجمالي المدفوعات"
-          value="4,500 ج.م"
+          value="4,500 ج.م" // استاتيك كما طلبت لعدم وجودها في الـ API
           icon={<IoWalletOutline size={26} />}
           iconColor="text-green-500"
           bgColor="bg-green-50 dark:bg-green-900/20"
         />
         <StatsCard
           title="الطلبات الملغاة"
-          value="1"
+          value="1" // استاتيك كما طلبت لعدم وجودها في الـ API
           icon={<IoCloseCircleOutline size={26} />}
           iconColor="text-red-500"
           bgColor="bg-red-50 dark:bg-red-900/20"

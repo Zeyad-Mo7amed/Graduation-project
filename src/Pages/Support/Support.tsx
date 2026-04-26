@@ -1,8 +1,4 @@
-import {
-  FiSearch,
-  FiFilter,
-  FiEye,
-} from "react-icons/fi";
+import { FiSearch, FiFilter, FiEye } from "react-icons/fi";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { MdFiberManualRecord } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -59,7 +55,7 @@ export default function Support() {
       className="p-4 md:p-6 bg-[#f9fafb] dark:bg-[#0f172a] min-h-screen transition-colors duration-300"
       dir="rtl"
     >
-      {/* Search & Filter Section - Adjusted for Mobile */}
+      {/* Search & Filter Section */}
       <div className="bg-white dark:bg-[#1e293b] p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-gray-100 dark:border-slate-700/50">
         <div className="relative w-full md:flex-1">
           <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 size-5" />
@@ -90,22 +86,18 @@ export default function Support() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table - Modified to show all columns on all screens with horizontal scroll */}
         <div className="overflow-x-auto">
-          <table className="w-full text-right border-collapse">
+          <table className="w-full text-right border-collapse min-w-[800px]">
+            {" "}
+            {/* أضفت min-w لضمان حدوث الاسكرول وعدم انضغاط الكلام */}
             <thead>
               <tr className="bg-gray-50/50 dark:bg-slate-800/50 text-gray-400 dark:text-slate-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">
                 <th className="p-4 whitespace-nowrap">رقم التذكرة</th>
                 <th className="p-4 whitespace-nowrap">مقدم الشكوى</th>
-                <th className="p-4 hidden lg:table-cell whitespace-nowrap">
-                  الطلب المرتبط
-                </th>
-                <th className="p-4 hidden md:table-cell whitespace-nowrap">
-                  عنوان الشكوى
-                </th>
-                <th className="p-4 hidden xl:table-cell whitespace-nowrap">
-                  التاريخ
-                </th>
+                <th className="p-4 whitespace-nowrap">الطلب المرتبط</th>
+                <th className="p-4 whitespace-nowrap">عنوان الشكوى</th>
+                <th className="p-4 whitespace-nowrap">التاريخ</th>
                 <th className="p-4 text-center whitespace-nowrap">الحالة</th>
                 <th className="p-4 text-center whitespace-nowrap">الإجراءات</th>
               </tr>
@@ -139,13 +131,13 @@ export default function Support() {
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 hidden lg:table-cell text-gray-400 dark:text-slate-500 text-[13px] whitespace-nowrap">
+                  <td className="p-4 text-gray-400 dark:text-slate-500 text-[13px] whitespace-nowrap">
                     {ticket.order}
                   </td>
-                  <td className="p-4 hidden md:table-cell text-xs md:text-sm font-medium text-gray-700 dark:text-slate-300 max-w-[200px] truncate">
+                  <td className="p-4 text-xs md:text-sm font-medium text-gray-700 dark:text-slate-300 max-w-[200px] truncate">
                     {ticket.subject}
                   </td>
-                  <td className="p-4 hidden xl:table-cell text-[11px] text-gray-400 dark:text-slate-500 whitespace-nowrap">
+                  <td className="p-4 text-[11px] text-gray-400 dark:text-slate-500 whitespace-nowrap">
                     {ticket.date}
                   </td>
                   <td className="p-4 text-center">
@@ -157,7 +149,7 @@ export default function Support() {
                   </td>
                   <td className="p-4 text-center">
                     <Link
-                      to={`/SupportDetails/${ticket.id}`} // ضيفنا / والـ { } جوه الباكتيكس
+                      to={`/SupportDetails/${ticket.id}`}
                       className="text-gray-300 cursor-pointer dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       <FiEye className="size-4 md:size-5 mx-auto" />
@@ -169,7 +161,7 @@ export default function Support() {
           </table>
         </div>
 
-        {/* Pagination - Adjusted for Mobile */}
+        {/* Pagination */}
         <div className="p-4 bg-white dark:bg-[#1e293b] flex flex-col sm:row sm:flex-row items-center justify-between border-t border-gray-50 dark:border-slate-700/50 gap-4">
           <div className="text-[10px] md:text-xs font-medium text-gray-400 dark:text-slate-500 order-2 sm:order-1">
             عرض 1 إلى 4 من{" "}
@@ -179,34 +171,34 @@ export default function Support() {
             تذكرة
           </div>
           <div className="flex items-center gap-2 order-1 md:order-2">
-                    <button
-                      title="HiChevronRight"
-                      className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
-                    >
-                      <HiChevronRight size={20} />
-                    </button>
-                    <div className="flex gap-1.5">
-                      {[1, 2, 3, "...", 24].map((page, i) => (
-                        <button
-                          key={i}
-                          className={`w-9 h-9 border cursor-pointer flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 
-                            ${
-                              page === 1
-                                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100 dark:shadow-none"
-                                : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 bg-white dark:bg-[#0F172A]"
-                            }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      title="HiChevronLeft"
-                      className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
-                    >
-                      <HiChevronLeft size={20} />
-                    </button>
-                  </div>
+            <button
+              title="HiChevronRight"
+              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+            >
+              <HiChevronRight size={20} />
+            </button>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, "...", 24].map((page, i) => (
+                <button
+                  key={i}
+                  className={`w-9 h-9 border cursor-pointer flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 
+                    ${
+                      page === 1
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100 dark:shadow-none"
+                        : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 bg-white dark:bg-[#0F172A]"
+                    }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            <button
+              title="HiChevronLeft"
+              className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+            >
+              <HiChevronLeft size={20} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

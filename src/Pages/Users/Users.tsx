@@ -1,65 +1,14 @@
-import {
-  IoEyeOutline,
-  IoSearchOutline,
-  IoFilter,
-} from "react-icons/io5";
+import { IoEyeOutline, IoSearchOutline, IoFilter } from "react-icons/io5";
 import { MdBlock } from "react-icons/md";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-
-const customers = [
-  {
-    id: 1,
-    name: "أحمد حسن",
-    phone: "+20 100 123 4567",
-    location: "المعادي، القاهرة",
-    date: "12 مايو 2026",
-    orders: 15,
-    status: "نشط",
-    img: "https://i.pravatar.cc/150?u=1",
-  },
-  {
-    id: 2,
-    name: "سارة محمود",
-    phone: "+20 112 345 6789",
-    location: "مدينة نصر، القاهرة",
-    date: "10 مايو 2026",
-    orders: 4,
-    status: "نشط",
-    img: "https://i.pravatar.cc/150?u=2",
-  },
-  {
-    id: 3,
-    name: "محمود عبدالعزيز",
-    phone: "+20 120 987 6543",
-    location: "سموحة، الإسكندرية",
-    date: "01 مايو 2026",
-    orders: 0,
-    status: "محظور",
-    img: "https://i.pravatar.cc/150?u=3",
-  },
-  {
-    id: 4,
-    name: "ليلى سعيد",
-    phone: "+20 155 444 3333",
-    location: "الشيخ زايد، الجيزة",
-    date: "28 أبريل 2026",
-    orders: 22,
-    status: "نشط",
-    img: "https://i.pravatar.cc/150?u=4",
-  },
-  {
-    id: 5,
-    name: "عمر فاروق",
-    phone: "+20 109 888 7777",
-    location: "المهندسين، الجيزة",
-    date: "20 أبريل 2026",
-    orders: 8,
-    status: "نشط",
-    img: "https://i.pravatar.cc/150?u=5",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { GetAllClient } from "../../APIs/GetAllClient.api";
+import Loading from "../../Components/Shared/Loading/Loading";
+import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
+import type { Customer } from "../../interfaces/interfaces";
+import { useState } from "react"; // 1. استيراد useState
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -75,6 +24,44 @@ const itemVariants = {
 };
 
 export default function Users() {
+  const [searchQuery, setSearchQuery] = useState(""); // 2. تعريف حالة البحث
+
+  const { data: allCliData, isLoading: isLoadingAllCli } = useQuery({
+    queryKey: ["GetAllClient"],
+    queryFn: GetAllClient,
+  });
+
+  if (isLoadingAllCli) return <Loading />;
+
+  // 3. منطق الفلترة (البحث بالاسم أو رقم الهاتف)
+  const filteredClients = (allCliData || []).filter((customer: Customer) => {
+    const term = searchQuery.toLowerCase();
+    return (
+      customer.fullName.toLowerCase().includes(term) ||
+      customer.phoneNumber.includes(term)
+    );
+  });
+
+  const clientList = filteredClients; // نستخدم المصفوفة المفلترة بدلاً من الأصلية
+  const totalClients = clientList.length;
+
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(totalClients / itemsPerPage) || 1;
+  const currentPage = 1;
+
+  const getPaginationGroup = () => {
+    if (totalPages <= 4) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    return [1, 2, 3, "...", totalPages];
+  };
+
+  const hasData = allCliData && allCliData.length > 0;
+
+  if (!hasData) {
+    return <NotFoundData />;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -88,6 +75,8 @@ export default function Users() {
           <input
             type="text"
             placeholder="بحث برقم الهاتف أو اسم العميل..."
+            value={searchQuery} // 4. ربط القيمة بالحالة
+            onChange={(e) => setSearchQuery(e.target.value)} // 5. تحديث الحالة عند الكتابة
             className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
           />
           <IoSearchOutline
@@ -110,146 +99,157 @@ export default function Users() {
           <h2 className="text-lg font-bold text-gray-800 dark:text-white">
             قائمة العملاء
             <span className="hidden sm:inline-block text-sm font-normal text-gray-400 dark:text-slate-500 mr-2">
-              1,250 عميل
+              {totalClients} عميل
             </span>
           </h2>
         </div>
 
-        {/* Scrollable Wrapper - Handle Table Overflow */}
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-slate-700">
-          <table className="w-full text-right border-collapse min-w-full">
-            <thead>
-              <tr className="text-gray-500 dark:text-slate-400 text-sm border-b border-gray-50 dark:border-slate-800">
-                <th className="px-6 py-4 font-medium">العميل</th>
-                <th className="px-6 py-4 font-medium hidden md:table-cell">
-                  رقم الهاتف
-                </th>
-                <th className="px-6 py-4 font-medium hidden lg:table-cell">
-                  المنطقة
-                </th>
-                <th className="px-6 py-4 font-medium hidden sm:table-cell">
-                  التاريخ
-                </th>
-                <th className="px-6 py-4 font-medium">الطلبات</th>
-                <th className="px-6 py-4 font-medium">الحالة</th>
-                <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
-              </tr>
-            </thead>
-            <motion.tbody
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="divide-y divide-gray-50 dark:divide-slate-800"
-            >
-              {customers.map((customer) => (
-                <motion.tr
-                  variants={itemVariants}
-                  key={customer.id}
-                  className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <img
-                      src={customer.img}
-                      alt=""
-                      className="w-9 h-9 rounded-full object-cover border border-gray-100 dark:border-slate-700 shrink-0"
-                    />
-                    <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                      {customer.name}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 dark:text-gray-400 tracking-wide whitespace-nowrap hidden md:table-cell">
-                    {customer.phone}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-500 text-sm hidden lg:table-cell">
-                    {customer.location}
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 dark:text-gray-500 text-sm hidden sm:table-cell">
-                    {customer.date}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-3 py-1 rounded-lg text-xs font-bold">
-                      {customer.orders}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-md text-[11px] font-bold inline-block whitespace-nowrap ${
-                        customer.status === "نشط"
-                          ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                          : "bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400"
-                      }`}
-                    >
-                      {customer.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-center gap-3 md:gap-4 text-gray-400 dark:text-slate-600">
-                      <Link
-                        to={`/DetailsUsers/${customer.id}`}
-                        title="عرض التفاصيل"
-                        className="hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer transition-all hover:scale-110"
+          {/* عرض رسالة "لا توجد نتائج" داخل الجدول إذا كان البحث لا يطابق أحد */}
+          {clientList.length === 0 ? (
+            <div className="p-10 text-center text-gray-400">
+              لا توجد نتائج تطابق بحثك
+            </div>
+          ) : (
+            <table className="w-full text-right border-collapse min-w-full">
+              <thead>
+                <tr className="text-gray-500 dark:text-slate-400 text-sm border-b border-gray-50 dark:border-slate-800">
+                  <th className="px-6 py-4 font-medium">العميل</th>
+                  <th className="px-6 py-4 font-medium hidden md:table-cell">
+                    رقم الهاتف
+                  </th>
+                  <th className="px-6 py-4 font-medium hidden lg:table-cell">
+                    المنطقة
+                  </th>
+                  <th className="px-6 py-4 font-medium hidden sm:table-cell">
+                    التاريخ
+                  </th>
+                  <th className="px-6 py-4 font-medium">الطلبات</th>
+                  <th className="px-6 py-4 font-medium">الحالة</th>
+                  <th className="px-6 py-4 font-medium text-center">
+                    الإجراءات
+                  </th>
+                </tr>
+              </thead>
+              <motion.tbody
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                key={searchQuery} // إعادة تشغيل الأنيميشن عند كل بحث جديد
+                className="divide-y divide-gray-50 dark:divide-slate-800"
+              >
+                {clientList.map((customer: Customer) => (
+                  <motion.tr
+                    variants={itemVariants}
+                    key={customer.userId}
+                    className="hover:bg-gray-50/50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <td className="px-6 py-4 flex items-center gap-3">
+                      <img
+                        src={customer.profileImageURL}
+                        alt=""
+                        className="w-9 h-9 rounded-full object-cover border border-gray-100 dark:border-slate-700 shrink-0"
+                      />
+                      <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                        {customer.fullName}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400 tracking-wide whitespace-nowrap hidden md:table-cell">
+                      {customer.phoneNumber}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500 dark:text-gray-500 text-sm hidden lg:table-cell">
+                      {customer.government}، {customer.city}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500 dark:text-gray-500 text-sm hidden sm:table-cell">
+                      {new Date(customer.createdAt).toLocaleDateString("ar-EG")}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 px-3 py-1 rounded-lg text-xs font-bold">
+                        {customer.numberOfOrder}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-md text-[11px] font-bold inline-block whitespace-nowrap ${
+                          customer.isActive
+                            ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+                            : "bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400"
+                        }`}
                       >
-                        <IoEyeOutline size={20} />
-                      </Link>
-                      <button
-                        title="حظر العميل"
-                        className={`hover:text-red-500 dark:hover:text-red-400 cursor-pointer transition-all hover:scale-110 ${customer.status === "محظور" ? "text-red-300 dark:text-red-900" : ""}`}
-                      >
-                        <MdBlock size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </motion.tbody>
-          </table>
+                        {customer.isActive ? "نشط" : "محظور"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center gap-3 md:gap-4 text-gray-400 dark:text-slate-600">
+                        <Link
+                          to={`/DetailsUsers/${customer.userId}`}
+                          title="عرض التفاصيل"
+                          className="hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer transition-all hover:scale-110"
+                        >
+                          <IoEyeOutline size={20} />
+                        </Link>
+                        <button
+                          title="حظر العميل"
+                          className={`hover:text-red-500 dark:hover:text-red-400 cursor-pointer transition-all hover:scale-110 ${!customer.isActive ? "text-red-300 dark:text-red-900" : ""}`}
+                        >
+                          <MdBlock size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </motion.tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination Section */}
         <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-slate-500">
           <div className="flex items-center gap-2 order-1 md:order-2">
-                    <button
-                      title="HiChevronRight"
-                      className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
-                    >
-                      <HiChevronRight size={20} />
-                    </button>
-                    <div className="flex gap-1.5">
-                      {[1, 2, 3, "...", 24].map((page, i) => (
-                        <button
-                          key={i}
-                          className={`w-9 h-9 border cursor-pointer flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 
-                            ${
-                              page === 1
-                                ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100 dark:shadow-none"
-                                : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 bg-white dark:bg-[#0F172A]"
-                            }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      title="HiChevronLeft"
-                      className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
-                    >
-                      <HiChevronLeft size={20} />
-                    </button>
-                  </div>
+            <button
+              title="السابق"
+              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+            >
+              <HiChevronRight size={20} />
+            </button>
+            <div className="flex gap-1.5">
+              {getPaginationGroup().map((page, i) => (
+                <button
+                  key={i}
+                  disabled={page === "..."}
+                  className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all 
+                    ${page === "..." ? "cursor-default border-transparent" : "cursor-pointer active:scale-90"}
+                    ${
+                      page === currentPage
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100 dark:shadow-none"
+                        : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 bg-white dark:bg-[#0F172A]"
+                    }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            <button
+              title="next"
+              className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+            >
+              <HiChevronLeft size={20} />
+            </button>
+          </div>
 
           <div className="order-1 sm:order-2 text-xs md:text-sm">
-            عرض{" "}
-            <span className="font-semibold text-gray-700 dark:text-slate-200">
+            عرض
+            <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
               1
-            </span>{" "}
-            إلى{" "}
-            <span className="font-semibold text-gray-700 dark:text-slate-200">
-              5
-            </span>{" "}
-            من أصل{" "}
-            <span className="font-semibold text-gray-700 dark:text-slate-200">
-              1,250
-            </span>{" "}
+            </span>
+            إلى
+            <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
+              {clientList.length}
+            </span>
+            من أصل
+            <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
+              {totalClients}
+            </span>
             عميل
           </div>
         </div>
