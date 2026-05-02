@@ -31,6 +31,8 @@ export default function Users() {
     queryFn: GetAllClient,
   });
 
+  console.log(allCliData);
+
   if (isLoadingAllCli) return <Loading />;
 
   // 3. منطق الفلترة (البحث بالاسم أو رقم الهاتف)

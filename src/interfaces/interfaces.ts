@@ -35,6 +35,16 @@ export interface TechnicianDetails {
   uploadedAt: string;
 }
 
+export interface Order {
+  id: number;
+  serviceName: string;
+  finalPrice: number;
+  state: string;
+  createdAt: string;
+  nameCli: string | null;
+  nameTec: string | null;
+}
+
 export interface Customer {
   userId: string;
   fullName: string;
@@ -47,4 +57,25 @@ export interface Customer {
   latitude: number;
   longitude: number;
   createdAt: string; // أو Date إذا كنت ستقوم بتحويلها
+}
+
+
+export interface OrderDetails {
+  id: number;
+  serviceName: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  workImage: string | null;
+  inspectedPrice: number;
+  afterPrice: number;
+  finalPrice: number;
+  placeDetails: string;
+  problemDetails: string;
+  nameClient: string;
+  phoneClient: string | null;
+  imageCliURL: string;
+  nameTec: string | null;
+  ratingAvg: number;
+  imageTecUrl: string | null;
+  state: string;
 }

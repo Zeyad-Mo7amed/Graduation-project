@@ -1,9 +1,10 @@
 import axios from "axios";
+import { BASE_URL } from "../../constants";
 
 export const getAllTechnicians = async () => {
   const token = localStorage.getItem("token");
   const { data } = await axios.get(
-    "https://herafy.runasp.net/api/Admin/GetAllTechnicians",
+    `${BASE_URL}api/Admin/GetAllTechnicians`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

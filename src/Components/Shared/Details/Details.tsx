@@ -13,10 +13,16 @@ import {
 import { FaStar, FaWrench } from "react-icons/fa";
 import L from "leaflet";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
+import { useQuery } from "@tanstack/react-query";
+import { GetDetailsOrder } from "../../../APIs/GetDetailsOrder.api";
+import Loading from "../Loading/Loading";
+import NotFoundData from "../NotFoundData/NotFoundData";
+import type { OrderDetails } from "../../../interfaces/interfaces";
+
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -26,44 +32,6 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const orderData = {
-  status: "قيد التنفيذ",
-  customer: {
-    name: "محمد عبدالله",
-    phone: "+201234567890",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    address: {
-      text: "شقة 12، عمارة 4 شارع التسعين الشمالي، التجمع الخامس، القاهرة",
-      lat: 30.0249,
-      lng: 31.488,
-    },
-  },
-  service: {
-    type: "سباكة",
-    date: "12 مايو 2026",
-    time: "10:30 صباحاً",
-    description:
-      "يوجد تسريب مياه قوي تحت حوض المطبخ، ويبدو أن هناك كسر في الأنبوب الرئيسي الموصل للخلاط. أحتاج إلى فني لمعاينة المشكلة وتغيير الأجزاء التالفة في أسرع وقت.",
-    attachments: [
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2070",
-      "https://images.unsplash.com/photo-1595433707802-68267d20790a?q=80&w=2080",
-    ],
-  },
-  craftsman: {
-    name: "أحمد حسن",
-    rating: 4.8,
-    reviews: 124,
-    avatar: "https://randomuser.me/api/portraits/men/75.jpg",
-    title: "فني سباكة معتمد",
-  },
-  financial: {
-    serviceFee: 50.0,
-    partsCost: 85.0,
-    vat: 18.9,
-    total: 153.9,
-  },
-};
-
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -71,19 +39,48 @@ const fadeInUp = {
 };
 
 export default function Details() {
-  const mapCenter: [number, number] = [
-    orderData.customer.address.lat,
-    orderData.customer.address.lng,
-  ];
+  const { id } = useParams<{ id: string }>();
 
-  const googleMapsUrl = `https://www.google.com/maps?q=${orderData.customer.address.lat},${orderData.customer.address.lng}`;
+  const { data, isLoading } = useQuery<OrderDetails>({
+    queryKey: ["GetDetailsOrder", id],
+    queryFn: () => GetDetailsOrder(id as string),
+    enabled: !!id,
+  });
+  console.log(data);
+  
+  if (isLoading) return <Loading />;
+  if (!data) return <NotFoundData />;
+
+  const tahtaCenter: [number, number] = [26.7696, 31.5021];
+
+  const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.placeDetails)}`;
+
+  const translateStatus = (state: string) => {
+    const statuses: Record<string, string> = {
+      Completed: "مكتمل",
+      Pending: "قيد الانتظار",
+      "In Progress": "قيد التنفيذ",
+      Canceled: "ملغي",
+    };
+    return statuses[state] || state;
+  };
+
+  const getStatusColor = (state: string) => {
+    switch (state) {
+      case "Completed":
+        return "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400";
+      case "Canceled":
+        return "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+      default:
+        return "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400";
+    }
+  };
 
   return (
     <div
       dir="rtl"
       className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] p-4 md:p-8 font-sans text-[#2B323B] dark:text-gray-200 transition-colors duration-300"
     >
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <Link
           to="/orders"
@@ -96,16 +93,16 @@ export default function Details() {
           <span className="text-slate-400 dark:text-gray-500 font-bold text-sm">
             حالة الطلب:
           </span>
-          <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-black px-4 py-1 rounded-xl text-xs">
-            {orderData.status}
+          <span
+            className={`${getStatusColor(data.state)} font-black px-4 py-1 rounded-xl text-xs`}
+          >
+            {translateStatus(data.state)}
           </span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* العمود الأيمن */}
         <div className="lg:col-span-7 space-y-8">
-          {/* كارت تفاصيل الخدمة */}
           <motion.div
             {...fadeInUp}
             className="bg-white dark:bg-[#1E293B] p-6 rounded-[2.5rem] shadow-sm border border-slate-50 dark:border-gray-800"
@@ -114,48 +111,48 @@ export default function Details() {
               <FaWrench className="text-blue-500" /> تفاصيل الخدمة
             </h3>
             <div className="space-y-4">
-              <DetailRow label="نوع الخدمة" value={orderData.service.type} />
+              <DetailRow label="نوع الخدمة" value={data.serviceName} />
               <DetailRow
                 label="التاريخ المجدول"
-                value={orderData.service.date}
+                value={new Date(data.scheduledDate).toLocaleDateString("ar-EG")}
                 icon={<FiCalendar />}
               />
               <DetailRow
                 label="الوقت المجدول"
-                value={orderData.service.time}
+                value={data.scheduledTime}
                 icon={<FiClock />}
               />
-
               <div className="mt-6">
                 <p className="text-slate-400 dark:text-gray-500 font-bold mb-3 text-sm">
                   وصف المشكلة
                 </p>
                 <div className="bg-slate-50 dark:bg-[#0F172A] p-5 rounded-2xl border border-slate-100 dark:border-gray-800">
                   <p className="text-slate-600 dark:text-gray-300 leading-relaxed text-sm font-medium">
-                    {orderData.service.description}
+                    {data.problemDetails}
                   </p>
                 </div>
               </div>
-
               <div className="mt-6">
                 <p className="text-slate-400 dark:text-gray-500 font-bold mb-3 text-sm">
                   الصور المرفقة
                 </p>
                 <div className="flex gap-3">
-                  {orderData.service.attachments.map((img, i) => (
+                  {data.workImage ? (
                     <img
-                      key={i}
-                      src={img}
-                      alt="attachment"
+                      src={data.workImage}
+                      alt="work"
                       className="w-24 h-24 rounded-2xl object-cover border-2 border-white dark:border-gray-700 shadow-sm"
                     />
-                  ))}
+                  ) : (
+                    <p className="text-xs text-gray-400 font-bold">
+                      لا توجد صور مرفقة
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
           </motion.div>
 
-          {/* كارت الملخص المالي */}
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.1 }}
@@ -164,38 +161,29 @@ export default function Details() {
             <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-slate-800 dark:text-white">
               <FiFileText className="text-blue-500" /> الملخص المالي
               <span className="mr-auto bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-lg text-[10px]">
-                مدفوع
+                {data.state === "Completed" ? "تم السداد" : "بانتظار السداد"}
               </span>
             </h3>
             <div className="space-y-4">
               <PriceRow
                 label="رسوم الخدمة (الكشفية)"
-                value={orderData.financial.serviceFee}
+                value={data.inspectedPrice}
               />
-              <PriceRow
-                label="تكلفة قطع الغيار"
-                value={orderData.financial.partsCost}
-              />
-              <PriceRow
-                label="ضريبة القيمة المضافة (14%)"
-                value={orderData.financial.vat}
-              />
+              <PriceRow label="تكلفة الخدمة" value={data.afterPrice} />
               <div className="border-t border-dashed border-slate-200 dark:border-gray-700 pt-4 mt-4 flex justify-between items-end">
                 <p className="font-black text-slate-800 dark:text-white text-xl">
                   الإجمالي
                 </p>
                 <p className="text-blue-600 dark:text-blue-400 font-black text-3xl">
                   <span className="text-sm ml-1">ج.م</span>{" "}
-                  {orderData.financial.total.toFixed(2)}
+                  {data.finalPrice.toFixed(2)}
                 </p>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* العمود الأيسر */}
         <div className="lg:col-span-5 space-y-8">
-          {/* كارت بيانات العميل + الخريطة */}
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.2 }}
@@ -207,26 +195,26 @@ export default function Details() {
             </h3>
             <div className="flex items-center gap-4 mb-6">
               <img
-                src={orderData.customer.avatar}
-                className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700"
-                alt="avatar"
+                src={data.imageCliURL || "https://via.placeholder.com/150"}
+                className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700 object-cover"
+                alt="client"
               />
               <div className="flex-1 text-right">
                 <p className="font-black text-slate-800 dark:text-white text-lg">
-                  {orderData.customer.name}
+                  {data.nameClient}
                 </p>
-                <Link
-                  to={`tel:${orderData.customer.phone}`}
+                <a
+                  href={data.phoneClient ? `tel:${data.phoneClient}` : "#"}
                   className="text-slate-400 dark:text-gray-500 font-bold text-sm hover:text-blue-500 transition-colors"
                   dir="ltr"
                 >
-                  {orderData.customer.phone}
-                </Link>
+                  {data.phoneClient || "رقم الهاتف غير متاح"}
+                </a>
               </div>
             </div>
 
             <div
-              className="flex flex-row-reverse items-center justify-end w-full px-2 mb-4"
+              className="flex flex-row-reverse items-center justify-end w-full px-2 mb-2"
               dir="rtl"
             >
               <span className="text-[#2B323B] dark:text-gray-200 font-bold ms-2 text-lg whitespace-nowrap">
@@ -237,34 +225,34 @@ export default function Details() {
               </div>
             </div>
 
-            <p className="text-slate-500 dark:text-gray-400 text-sm font-medium leading-relaxed mb-4 text-right">
-              {orderData.customer.address.text}
+            <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-4 text-right leading-relaxed">
+              {data.placeDetails}
             </p>
 
-            <div className="h-64 rounded-[2rem] overflow-hidden border-4 border-slate-50 dark:border-gray-800 relative z-10 group">
-              <Link
-                to={googleMapsUrl}
+            <div className="h-64 rounded-[2rem] overflow-hidden border-4 border-slate-50 dark:border-gray-800 relative z-10">
+              <a
+                href={googleMapsSearchUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute top-4 left-15 z-[9999] bg-white dark:bg-[#1E293B] text-blue-600 dark:text-blue-400 px-3 py-2 rounded-xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-blue-50 dark:border-gray-700 active:scale-95 transition-all md:opacity-0 md:group-hover:opacity-100 opacity-100"
+                className="absolute top-4 left-4 z-[9999] bg-white dark:bg-[#1E293B] text-blue-600 dark:text-blue-400 px-3 py-2 rounded-xl shadow-2xl font-bold text-[10px] flex items-center gap-2 border border-blue-50 dark:border-gray-700 hover:scale-105 transition-transform"
               >
-                تتبع في خرائط جوجل <FiExternalLink />
-              </Link>
+                تتبع العنوان في الخرائط <FiExternalLink />
+              </a>
 
               <MapContainer
-                center={mapCenter}
-                zoom={14}
+                center={tahtaCenter}
+                zoom={13}
                 style={{ height: "100%", width: "100%" }}
               >
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={mapCenter}>
-                  <Popup>{orderData.customer.name}</Popup>
+                <Marker position={tahtaCenter}>
+                  <Popup>{data.placeDetails}</Popup>
                 </Marker>
               </MapContainer>
             </div>
           </motion.div>
 
-          {/* كارت بيانات الحرفي */}
+          {/* بيانات الحرفي */}
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.3 }}
@@ -276,35 +264,32 @@ export default function Details() {
             </h3>
             <div className="flex items-center gap-4 mb-8">
               <img
-                src={orderData.craftsman.avatar}
-                className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700"
-                alt="avatar"
+                src={data.imageTecUrl || "https://via.placeholder.com/150"}
+                className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700 object-cover"
+                alt="tech"
               />
               <div className="flex-1 text-right">
                 <p className="font-black text-slate-800 dark:text-white text-lg">
-                  {orderData.craftsman.name}
+                  {data.nameTec || "بانتظار قبول فني"}
                 </p>
                 <p className="text-blue-500 dark:text-blue-400 font-bold text-xs">
-                  {orderData.craftsman.title}
+                  {data.serviceName}
                 </p>
               </div>
               <div className="bg-slate-50 dark:bg-[#0F172A] p-3 rounded-2xl text-center border border-slate-100 dark:border-gray-800">
                 <div className="flex items-center gap-1 text-amber-500 font-black justify-center">
-                  <FaStar size={12} /> {orderData.craftsman.rating}
+                  <FaStar size={12} /> {data.ratingAvg}
                 </div>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 font-bold mt-1">
-                  ({orderData.craftsman.reviews} تقييم)
-                </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <Link
-                to={`tel:${orderData.customer.phone}`}
-                className="bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100 dark:shadow-none"
+              <a
+                href={data.phoneClient ? `tel:${data.phoneClient}` : "#"}
+                className="bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg"
               >
                 اتصال <FiPhone />
-              </Link>
-              <button className="bg-blue-50 dark:bg-blue-900/20 cursor-pointer text-blue-600 dark:text-blue-400 py-4 rounded-2xl font-black flex items-center justify-center gap-2 border border-blue-100 dark:border-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+              </a>
+              <button className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-4 rounded-2xl font-black flex items-center justify-center gap-2 border border-blue-100 dark:border-blue-900/30">
                 مراسلة <FiMessageCircle />
               </button>
             </div>

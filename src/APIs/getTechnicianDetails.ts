@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BASE_URL } from "../../constants";
 
 // هنفترض إنك مخزن التوكن باسم "userToken"
 export const getTechnicianDetails = async (id: string) => {
@@ -7,7 +8,7 @@ export const getTechnicianDetails = async (id: string) => {
     // 1. نسحب التوكن من الـ localStorage
 
     const response = await axios.get(
-      `https://herafy.runasp.net/api/Admin/GetTechnician`,
+      `${BASE_URL}api/Admin/GetTechnician`,
       {
         params: { id },
         headers: {

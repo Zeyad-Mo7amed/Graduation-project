@@ -1,9 +1,10 @@
 
 import axios from "axios";
+import { BASE_URL } from "../../constants";
 
 export async function login(dataForm: any) {
   const { data } = await axios.post(
-    `https://herafy.runasp.net/api/Auth/Login`,
+    `${BASE_URL}api/Auth/Login`,
     dataForm,
   );
   console.log('dataForm',data);

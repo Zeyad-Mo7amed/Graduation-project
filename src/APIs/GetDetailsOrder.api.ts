@@ -1,13 +1,12 @@
 import axios from "axios";
 import { BASE_URL } from "../../constants";
 
-export const GetClientDetails = async (id: string) => {
+export const GetDetailsOrder = async (id: string | number) => {
   const token = localStorage.getItem("token");
   try {
     const response = await axios.get(
-      `${BASE_URL}api/Admin/GetClientDetails`,
+      `${BASE_URL}api/Order/GetDetailsOrderAdmin/${id}`,
       {
-        params: { id },
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -16,7 +15,7 @@ export const GetClientDetails = async (id: string) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error fetching technician details:", error);
+    console.error("Error fetching order details:", error);
     throw error;
   }
 };
