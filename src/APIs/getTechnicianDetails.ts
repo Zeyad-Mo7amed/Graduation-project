@@ -8,7 +8,7 @@ export const getTechnicianDetails = async (id: string) => {
     // 1. نسحب التوكن من الـ localStorage
 
     const response = await axios.get(
-      `${BASE_URL}api/Admin/GetTechnician`,
+      `${BASE_URL}api/Admin/GetDecumentTechnician`,
       {
         params: { id },
         headers: {

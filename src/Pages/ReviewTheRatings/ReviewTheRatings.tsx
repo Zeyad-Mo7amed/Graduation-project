@@ -1,4 +1,4 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { FaStar, FaRegStar, FaSearch, FaFilter } from "react-icons/fa";
 import {
   MdCheckCircleOutline,
@@ -11,10 +11,19 @@ import {
   IoCloseSharp,
   IoCloseOutline,
   IoWarningOutline,
+  IoSearchOutline,
 } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { GetFraudOrders, type FraudOrder } from "../../APIs/GetAllReviews.api";
+import Loading from "../../Components/Shared/Loading/Loading";
+import { ApprovedReview } from "../../APIs/ApprovedReview.api";
+import { toast } from "react-toastify";
+import { Oval } from "react-loader-spinner";
+import { DeleteReview } from "../../APIs/deleteReview.api";
 
-interface Review {
+// تعريف الـ Type محلياً
+interface ReviewMapped {
   id: number;
   client: string;
   worker: string;
@@ -24,84 +33,146 @@ interface Review {
   reasons: string[];
   date: string;
   initial: string;
+  confidenceScore: number;
 }
 
 export default function ReviewTheRatings() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] =
-    useState<boolean>(false); // حالة مودال التأكيد
-  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
+    useState<boolean>(false);
+  const [selectedReview, setSelectedReview] = useState<ReviewMapped | null>(
+    null,
+  );
+
+  const queryClient = useQueryClient();
+
+  // استدعاء الـ API لجميع التقييمات
+  const { data: getAllReviews, isLoading: isLoadingReviews } = useQuery<
+    FraudOrder[]
+  >({
+    queryKey: ["fraudOrders"],
+    queryFn: GetFraudOrders,
+    refetchInterval: 60000,
+  });
+
+  // const { data: fraudOrdersCount, isLoading: isLoadingFraudOrders } = useQuery<
+  //   FraudOrder[]
+  // >({
+  //   queryKey: ["fraudOrdersCount"],
+  //   queryFn: fetchFraudOrders,
+  //   refetchInterval: 60000,
+  // });
+
+  const {
+    mutate: handleApprovedReview,
+    isPending: isApprovedLoading,
+    variables: pendingApprovedId,
+  } = useMutation({
+    mutationFn: (id: string) => ApprovedReview(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fraudOrders"] });
+      toast.success("تم اعتماد التقييم بنجاح");
+      setIsModalOpen(false);
+    },
+    onError: (error) => {
+      toast.error("حدث خطأ أثناء اعتماد التقييم");
+      console.error(error);
+    },
+  });
+
+  const {
+    mutate: handleDeleteReview,
+    isPending: isDeleteLoading,
+  } = useMutation({
+    mutationFn: (id: string) => DeleteReview(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fraudOrders"] });
+      toast.success("تم الحذف بنجاح");
+      setIsConfirmDeleteOpen(false);
+      setIsModalOpen(false);
+    },
+    onError: (err: any) => {
+      const errMsg = err.response?.data?.message || "حدث خطأ في الحذف";
+      toast.error(errMsg);
+    },
+  });
+
+  // عمل مابينج للداتا
+  const reviews: ReviewMapped[] =
+    getAllReviews?.map((item) => ({
+      id: item.id,
+      client: item.nameClient,
+      worker: item.nameTechnician,
+      job: "فني متخصص",
+      rating: item.rating,
+      comment: item.comment,
+      reasons: item.fraudReasons ? item.fraudReasons.split("،") : [],
+      date: new Date(item.createdAt).toLocaleDateString("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+      initial: item.nameClient.charAt(0),
+      confidenceScore: item.confidenceScore,
+    })) || [];
+
+  const formatTableComment = (text: string) => {
+    const words = text.split(/\s+/);
+    if (words.length <= 4) return text;
+    return words.slice(0, 4).join(" ") + "...";
+  };
+
+  const formatTableReason = (reasons: string[]) => {
+    if (reasons.length === 0) return "";
+    const fullText = reasons.join(" ");
+    const matches = [...fullText.matchAll(/\(([^)]+)\)/g)];
+    if (matches.length > 0) {
+      return matches.map((m) => m[1]).join(" - ");
+    }
+    return reasons[0];
+  };
+
+  const filteredReviews = reviews.filter(
+    (rev) =>
+      rev.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      rev.worker.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const stats = [
     {
       title: "إجمالي التقييمات المشبوهة",
-      value: 150,
+      value: reviews.length,
       icon: <IoTriangleOutline className="text-slate-400 text-2xl" />,
     },
     {
       title: "تم اعتمادها",
-      value: 80,
+      value: 0,
       icon: <MdCheckCircleOutline className="text-green-500 text-2xl" />,
     },
     {
       title: "تم حذفها",
-      value: 50,
+      value: 0,
       icon: <MdOutlineDeleteSweep className="text-red-400 text-2xl" />,
     },
     {
       title: "في انتظار القرار",
-      value: 20,
+      value: reviews.length,
       icon: <MdHistory className="text-yellow-500 text-2xl" />,
     },
   ];
 
-  const reviews: Review[] = [
-    {
-      id: 1,
-      client: "ياسر عبد الرحمن",
-      worker: "أحمد سيد",
-      job: "سباك",
-      rating: 1,
-      comment:
-        "أسوأ سباك شوفته، جيه متأخر وشغله سيء جداً ولا أنصح بالتعامل معه أبداً...",
-      reasons: ["كلمات مسيئة", "محتوى متكرر"],
-      date: "10 مايو 2026",
-      initial: "ي",
-    },
-    {
-      id: 2,
-      client: "مريم خالد",
-      worker: "محمود حسن",
-      job: "فني كهرباء",
-      rating: 5,
-      comment: "ممتاز جداً وسريع في شغله.",
-      reasons: ["تقييمات سريعة"],
-      date: "11 مايو 2026",
-      initial: "م",
-    },
-    {
-      id: 3,
-      client: "علي عثمان",
-      worker: "سعيد محمد",
-      job: "عامل نظافة",
-      rating: 3,
-      comment: "بعض الأماكن بدون تنظيف.",
-      reasons: ["حساب جديد"],
-      date: "12 مايو 2026",
-      initial: "ع",
-    },
-  ];
-
-  const openDetails = (review: Review) => {
+  const openDetails = (review: ReviewMapped) => {
     setSelectedReview(review);
     setIsModalOpen(true);
   };
 
-  const openDeleteConfirm = (review: Review) => {
+  const openDeleteConfirm = (review: ReviewMapped) => {
     setSelectedReview(review);
     setIsConfirmDeleteOpen(true);
   };
+
+  if (isLoadingReviews) return <Loading />;
 
   return (
     <div
@@ -147,8 +218,7 @@ export default function ReviewTheRatings() {
             />
           </div>
           <button className="flex items-center gap-2 px-6 py-2.5 border border-gray-200 dark:border-slate-600 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-bold transition-all cursor-pointer">
-            <FaFilter className="text-sm" />
-            تصفية
+            <FaFilter className="text-sm" /> تصفية
           </button>
         </div>
 
@@ -166,89 +236,125 @@ export default function ReviewTheRatings() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-700/50">
-              {reviews.map((item) => (
-                <motion.tr
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  key={item.id}
-                  className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors"
-                >
-                  <td className="p-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30">
-                        {item.initial}
-                      </div>
-                      <span className="font-bold dark:text-slate-200 whitespace-nowrap">
-                        {item.client}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="p-5">
-                    <div className="flex flex-col">
-                      <span className="font-bold dark:text-slate-200 whitespace-nowrap">
-                        {item.worker}
-                      </span>
-                      <span className="text-xs text-slate-400">{item.job}</span>
-                    </div>
-                  </td>
-                  <td className="p-5">
-                    <div className="flex gap-0.5 text-yellow-400">
-                      {[...Array(5)].map((_, i) =>
-                        i < item.rating ? (
-                          <FaStar key={i} size={14} />
-                        ) : (
-                          <FaRegStar
-                            key={i}
-                            size={14}
-                            className="text-slate-300 dark:text-slate-600"
-                          />
-                        ),
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-5 min-w-[200px]">
-                    <p className="text-sm text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
-                      {item.comment}
-                    </p>
-                    <button
-                      onClick={() => openDetails(item)}
-                      className="text-blue-500 text-[11px] font-bold mt-1 hover:underline cursor-pointer"
-                    >
-                      عرض التفاصيل
-                    </button>
-                  </td>
-                  <td className="p-5">
-                    <div className="flex flex-wrap gap-1">
-                      {item.reasons.map((r, i) => (
-                        <span
-                          key={i}
-                          className="bg-pink-50 dark:bg-pink-900/20 text-pink-500 text-[10px] px-2.5 py-1 rounded-lg font-bold whitespace-nowrap"
-                        >
-                          {r}
+              {filteredReviews.length > 0 ? (
+                filteredReviews.map((item) => (
+                  <motion.tr
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    key={item.id}
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-700/20 transition-colors"
+                  >
+                    <td className="p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/30">
+                          {item.initial}
+                        </div>
+                        <span className="font-bold dark:text-slate-200 whitespace-nowrap">
+                          {item.client}
                         </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="p-5 text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                    {item.date}
-                  </td>
-                  <td className="p-5">
-                    <div className="flex gap-2 justify-center">
-                      <button className="flex items-center gap-1.5 px-4 py-2 border border-blue-500 text-blue-500 rounded-xl text-xs font-bold hover:bg-blue-50 transition-all cursor-pointer whitespace-nowrap">
-                        <IoCheckmarkSharp size={16} /> اعتماد التقييم
-                      </button>
-                      {/* زر الحذف في الجدول */}
+                      </div>
+                    </td>
+                    <td className="p-5">
+                      <div className="flex flex-col">
+                        <span className="font-bold dark:text-slate-200 whitespace-nowrap">
+                          {item.worker}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {item.job}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-5">
+                      <div className="flex items-center gap-0.5 dark:text-white text-black">
+                        <FaRegStar
+                          size={14}
+                          className="text-yellow-400 dark:text-yellow-400"
+                        />
+                        {item.rating}
+                      </div>
+                    </td>
+                    <td className="p-5 min-w-[200px]">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 truncate max-w-[180px]">
+                        {formatTableComment(item.comment)}
+                      </p>
                       <button
-                        onClick={() => openDeleteConfirm(item)}
-                        className="flex items-center gap-1.5 px-4 py-2 border border-red-400 text-red-400 rounded-xl text-xs font-bold hover:bg-red-50 transition-all cursor-pointer whitespace-nowrap"
+                        onClick={() => openDetails(item)}
+                        className="text-blue-500 text-[11px] font-bold mt-1 hover:underline cursor-pointer"
                       >
-                        <IoCloseSharp size={16} /> حذف التقييم
+                        عرض التفاصيل
                       </button>
-                    </div>
+                    </td>
+                    <td className="p-5">
+                      <div className="flex flex-wrap gap-1">
+                        <span className="bg-pink-50 dark:bg-pink-900/20 text-pink-500 text-[10px] px-2.5 py-1 rounded-lg font-bold whitespace-nowrap border border-pink-100 dark:border-pink-900/30">
+                          {formatTableReason(item.reasons)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="p-5 text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      {item.date}
+                    </td>
+                    <td className="p-5 text-center">
+                      <div className="flex gap-2 justify-center">
+                        <button
+                          onClick={() => handleApprovedReview(String(item.id))}
+                          disabled={
+                            isApprovedLoading &&
+                            pendingApprovedId === String(item.id)
+                          }
+                          className="flex items-center justify-center gap-1.5 px-4 py-2 border border-blue-500 text-blue-500 rounded-xl text-xs font-bold hover:bg-blue-50 transition-all cursor-pointer whitespace-nowrap min-w-[95px] disabled:opacity-70 disabled:cursor-not-allowed"
+                        >
+                          {isApprovedLoading &&
+                          pendingApprovedId === String(item.id) ? (
+                            <Oval
+                              height={16}
+                              width={16}
+                              color="#3b82f6"
+                              secondaryColor="#d1d5db"
+                              strokeWidth={5}
+                              visible={true}
+                            />
+                          ) : (
+                            <>
+                              <IoCheckmarkSharp size={16} />
+                              <span>اعتماد</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => openDeleteConfirm(item)}
+                          className="flex items-center gap-1.5 px-4 py-2 border border-red-400 text-red-400 rounded-xl text-xs font-bold hover:bg-red-50 transition-all cursor-pointer whitespace-nowrap"
+                        >
+                          <IoCloseSharp size={16} /> حذف
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="p-20 text-center">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex flex-col items-center justify-center gap-4"
+                    >
+                      <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center">
+                        <IoSearchOutline className="text-slate-300 dark:text-slate-500 text-4xl" />
+                      </div>
+                      <div>
+                        <p className="text-slate-600 dark:text-slate-300 font-bold text-lg">
+                          لا توجد مراجعات تطابق بحثك
+                        </p>
+                        <p className="text-slate-400 text-sm mt-1">
+                          جرب البحث بكلمات أخرى أو تأكد من الاسم
+                        </p>
+                      </div>
+                    </motion.div>
                   </td>
-                </motion.tr>
-              ))}
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -273,6 +379,7 @@ export default function ReviewTheRatings() {
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-slate-700">
                 <button
+                  title="outLine"
                   onClick={() => setIsModalOpen(false)}
                   className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                 >
@@ -313,13 +420,13 @@ export default function ReviewTheRatings() {
                   </div>
                 </div>
                 <div className="flex justify-between items-center px-2">
-                  <div className="text-right">
+                  <div>
                     <h4 className="font-bold text-[#1E293B] dark:text-white mb-1 text-sm">
                       التقييم والتاريخ
                     </h4>
                     <div className="flex gap-1 text-yellow-400">
                       {[...Array(5)].map((_, i) =>
-                        i === 0 ? (
+                        i < selectedReview.rating ? (
                           <FaStar key={i} size={16} />
                         ) : (
                           <FaRegStar
@@ -347,9 +454,10 @@ export default function ReviewTheRatings() {
                 </div>
                 <div className="px-2">
                   <h4 className="font-bold text-[#1E293B] dark:text-white mb-3 text-sm">
-                    أسباب الشك (محدد بواسطة الذكاء الاصطناعي)
+                    أسباب الشك (الذكاء الاصطناعي - نسبة الثقة{" "}
+                    {selectedReview.confidenceScore}%)
                   </h4>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {selectedReview.reasons.map((r, i) => (
                       <span
                         key={i}
@@ -362,22 +470,36 @@ export default function ReviewTheRatings() {
                 </div>
               </div>
               <div className="p-6 pt-2 flex gap-3">
-                <button className="flex-1 duration-150 hover:bg-[#0b4ab0] bg-[#3B82F6] text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-100 transition-all cursor-pointer">
-                  اعتماد التقييم
+                <button
+                  onClick={() =>
+                    handleApprovedReview(String(selectedReview.id))
+                  }
+                  disabled={
+                    isApprovedLoading &&
+                    pendingApprovedId === String(selectedReview.id)
+                  }
+                  className="flex-1 hover:bg-[#0b4ab0] bg-[#3B82F6] text-white py-3.5 rounded-2xl font-bold shadow-lg transition-all cursor-pointer flex justify-center items-center gap-2 disabled:opacity-70"
+                >
+                  {isApprovedLoading &&
+                  pendingApprovedId === String(selectedReview.id) ? (
+                    <Oval height={20} width={20} color="#fff" strokeWidth={5} />
+                  ) : (
+                    "اعتماد التقييم"
+                  )}
                 </button>
-                {/* زر الحذف داخل المودال */}
                 <button
                   onClick={() => {
+                    // نغلق مودال التفاصيل ونفتح مودال التأكيد
                     setIsModalOpen(false);
                     setIsConfirmDeleteOpen(true);
                   }}
-                  className="flex-1 duration-150 hover:bg-[#bd0f2c] bg-[#F43F5E] text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-red-100 transition-all cursor-pointer"
+                  className="flex-1 hover:bg-[#bd0f2c] bg-[#F43F5E] text-white py-3.5 rounded-2xl font-bold shadow-lg transition-all cursor-pointer"
                 >
                   حذف التقييم
                 </button>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-[#F1F5F9] duration-150 hover:text-white  text-[#64748B] px-8 py-3.5 rounded-2xl font-bold hover:bg-gray-400 cursor-pointer transition-all"
+                  className="bg-[#F1F5F9] text-[#64748B] px-8 py-3.5 rounded-2xl font-bold hover:bg-gray-400 transition-all cursor-pointer"
                 >
                   إغلاق
                 </button>
@@ -387,7 +509,7 @@ export default function ReviewTheRatings() {
         )}
       </AnimatePresence>
 
-      {/* مودال تأكيد الحذف (الذي طلبته) */}
+      {/* مودال تأكيد الحذف */}
       <AnimatePresence>
         {isConfirmDeleteOpen && (
           <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
@@ -395,7 +517,7 @@ export default function ReviewTheRatings() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsConfirmDeleteOpen(false)}
+              onClick={() => !isDeleteLoading && setIsConfirmDeleteOpen(false)}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <motion.div
@@ -404,30 +526,35 @@ export default function ReviewTheRatings() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative bg-white dark:bg-slate-800 w-full max-w-[400px] rounded-[35px] p-8 shadow-2xl z-[10002] text-center"
             >
-              {/* أيقونة التحذير الدائرية */}
               <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <IoWarningOutline className="text-red-500 text-4xl" />
               </div>
-
               <h2 className="text-2xl font-black text-[#1E293B] dark:text-white mb-4">
-                هل أنت متأكد من حذف هذا التقييم؟
+                هل أنت متأكد من الحذف؟
               </h2>
-
               <p className="text-gray-500 dark:text-slate-400 text-sm leading-relaxed mb-8 px-2 font-medium">
-                لن يظهر هذا التقييم في ملف الحرفي بعد الحذف ولن يتم احتسابه في
-                متوسط التقييمات. هذا الإجراء لا يمكن التراجع عنه.
+                هذا الإجراء سيقوم بحذف تقييم "{selectedReview?.client}" للحرفي "
+                {selectedReview?.worker}" بشكل نهائي.
               </p>
-
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => setIsConfirmDeleteOpen(false)}
-                  className="w-full bg-[#FF3B3B] hover:bg-red-600 text-white py-4 rounded-2xl font-black text-lg transition-all shadow-lg shadow-red-100 dark:shadow-none cursor-pointer"
+                  onClick={() =>
+                    selectedReview &&
+                    handleDeleteReview(String(selectedReview.id))
+                  }
+                  disabled={isDeleteLoading}
+                  className="w-full bg-[#FF3B3B] hover:bg-red-600 text-white py-4 rounded-2xl font-black text-lg transition-all cursor-pointer flex justify-center items-center gap-2 disabled:opacity-70"
                 >
-                  نعم، احذف
+                  {isDeleteLoading ? (
+                    <Oval height={24} width={24} color="#fff" strokeWidth={5} />
+                  ) : (
+                    "نعم، احذف"
+                  )}
                 </button>
                 <button
                   onClick={() => setIsConfirmDeleteOpen(false)}
-                  className="w-full bg-[#F1F5F9] dark:bg-slate-700 text-[#64748B] dark:text-slate-200 py-4 rounded-2xl font-bold text-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-all cursor-pointer"
+                  disabled={isDeleteLoading}
+                  className="w-full bg-[#F1F5F9] dark:bg-slate-700 text-[#64748B] dark:text-slate-200 py-4 rounded-2xl font-bold text-lg hover:bg-gray-200 transition-all cursor-pointer disabled:opacity-50"
                 >
                   تراجع
                 </button>

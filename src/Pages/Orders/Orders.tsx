@@ -16,9 +16,6 @@ export default function Orders() {
     queryFn: GetAllOrder,
   });
 
-  console.log('order Data ' , orderData);
-  
-
   // 2. منطق البحث
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -26,16 +23,16 @@ export default function Orders() {
     orderData?.filter((order) => order.id.toString().includes(searchTerm)) ||
     [];
 
-  // 3. منطق الترقيم (Pagination)
+  // 3. منطق الترقيم (Pagination) - تم التعديل لعرض 5 عناصر
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 5;
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
 
-  // دالة توليد أرقام الصفحات بالشكل المطلوب (1, 2, 3, ..., Last)
+  // دالة توليد أرقام الصفحات المطورة (لو عدي صفحة 2 يظهر الـ ...)
   const getPageNumbers = () => {
     const pages = [];
     if (totalPages <= 4) {
@@ -52,17 +49,15 @@ export default function Orders() {
     return pages;
   };
 
-  // 4. تنسيق الألوان (تم تعديل In Progress ليشبه الصورة)
+  // 4. تنسيق الألوان والحالات المطلوبة
   const getStatusStyles = (state: string) => {
     switch (state) {
       case "Completed":
         return "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400";
       case "Pending":
-        return "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400";
-      case "In Progress":
-        // لون Amber البرتقالي/الذهبي زي الصورة
         return "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500";
-      case "Canceled":
+      case "Rejected":
+      case "Cancelled":
         return "bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400";
       default:
         return "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400";
@@ -72,9 +67,9 @@ export default function Orders() {
   const translateStatus = (state: string) => {
     const statuses: Record<string, string> = {
       Completed: "مكتمل",
-      Pending: "قيد الانتظار",
-      "In Progress": "قيد التنفيذ",
-      Canceled: "ملغي",
+      Pending: "قيد التنفيذ",
+      Rejected: "تم الرفض",
+      Cancelled: "تم إلغاؤه",
     };
     return statuses[state] || state;
   };
@@ -199,10 +194,11 @@ export default function Orders() {
       {/* Pagination Section */}
       <div className="flex flex-col md:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-50 dark:border-slate-800 gap-6">
         <div className="flex items-center gap-2 order-1 md:order-2">
-          <button title="Right"
+          <button
+            title="Right"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+            className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-50"
           >
             <HiChevronRight size={20} />
           </button>
@@ -222,12 +218,13 @@ export default function Orders() {
             ))}
           </div>
 
-          <button title="Left"
+          <button
+            title="Left"
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
             disabled={currentPage === totalPages || totalPages === 0}
-            className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+            className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-50"
           >
             <HiChevronLeft size={20} />
           </button>
@@ -236,7 +233,7 @@ export default function Orders() {
         <div className="text-sm font-medium order-2 md:order-1">
           <span className="text-gray-400 dark:text-slate-500">عرض </span>
           <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            {filteredOrders.length > 0 ? indexOfFirstItem + 1 : 0}
+            {filteredOrders.length > 0 ? indexOfFirstItem +1 : 0}
           </span>
           <span className="text-gray-400 dark:text-slate-500"> إلى </span>
           <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">

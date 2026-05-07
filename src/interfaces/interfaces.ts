@@ -2,16 +2,17 @@ import type { JSX } from "react";
 
 export interface Technician {
   userId: string;
-  fullname: string;
+  fullname: string; // لاحظ أنها مكتوبة في الـ Response بـ n واحدة fullname وليس fullName
   bio: string;
   serviceCategory: string;
   experienceYears: number;
-  isActive: boolean;
+  state: string; // اتغيرت من isActive إلى state ونوعها string (مثلاً "Active")
   availabilityStatus: boolean;
   profileImageURL: string;
   ratingAvg: number;
   completedJobs: number;
   createdAt: string;
+  inspectedPrice: number; // ضفنا دي كمان لأنها موجودة في الـ Response الجديد
 }
 
 export interface StatCardProps {
@@ -56,7 +57,8 @@ export interface Customer {
   numberOfOrder: number;
   latitude: number;
   longitude: number;
-  createdAt: string; // أو Date إذا كنت ستقوم بتحويلها
+  createdAt: string;
+  state: string; // أو Date إذا كنت ستقوم بتحويلها
 }
 
 
@@ -78,4 +80,16 @@ export interface OrderDetails {
   ratingAvg: number;
   imageTecUrl: string | null;
   state: string;
+}
+
+export interface Review {
+  id: number;
+  client: string;
+  worker: string;
+  job: string;
+  rating: number;
+  comment: string;
+  reasons: string[];
+  date: string;
+  initial: string;
 }

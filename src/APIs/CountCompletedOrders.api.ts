@@ -1,13 +1,13 @@
 import axios from "axios";
-import { BASE_URL } from "../../constants";
+import { BASE_URL } from "./RejectState.api";
 
-export const GetClientDetails = async (id: string) => {
+export const CountCompletedOrders = async () => {
   const token = localStorage.getItem("token");
+
   try {
     const response = await axios.get(
-      `${BASE_URL}api/Admin/GetDecumentClient`,
+      `${BASE_URL}api/Order/CountCompletedOrders`,
       {
-        params: { id },
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -16,7 +16,7 @@ export const GetClientDetails = async (id: string) => {
 
     return response.data;
   } catch (error) {
-    console.error("Error fetching technician details:", error);
+    console.error("Error counting completed orders:", error);
     throw error;
   }
 };

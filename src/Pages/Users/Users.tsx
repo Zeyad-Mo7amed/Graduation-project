@@ -1,14 +1,21 @@
-import { IoEyeOutline, IoSearchOutline, IoFilter } from "react-icons/io5";
-import { MdBlock } from "react-icons/md";
+import {
+  IoEyeOutline,
+  IoSearchOutline,
+  IoAlertCircleOutline,
+} from "react-icons/io5";
+import { MdOutlineDeleteOutline } from "react-icons/md";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GetAllClient } from "../../APIs/GetAllClient.api";
+import { DeleteClient } from "../../APIs/DeleteClient.api"; // تأكد من استيراد API الحذف
 import Loading from "../../Components/Shared/Loading/Loading";
 import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
 import type { Customer } from "../../interfaces/interfaces";
-import { useState } from "react"; // 1. استيراد useState
+import { useState, useEffect } from "react";
+import imgNotFound from "../../../src/assets/c923ee5356a7b4341c342b4fdbd0756b.webp";
+import { toast } from "react-toastify";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,18 +31,44 @@ const itemVariants = {
 };
 
 export default function Users() {
-  const [searchQuery, setSearchQuery] = useState(""); // 2. تعريف حالة البحث
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const queryClient = useQueryClient();
+
+  // حالة الموديل والعميل المختار للحذف
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
 
   const { data: allCliData, isLoading: isLoadingAllCli } = useQuery({
     queryKey: ["GetAllClient"],
     queryFn: GetAllClient,
   });
-
   console.log(allCliData);
+  
+
+  // منطق الحذف (Mutation)
+  const { mutate: deleteMutate, isPending: isDeleting } = useMutation({
+    mutationFn: (clientId: string) => DeleteClient(clientId),
+    onSuccess: () => {
+      toast.success("تم حذف العميل بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["GetAllClient"] });
+      setIsDeleteModalOpen(false);
+      setSelectedCustomer(null);
+    },
+    onError: () => {
+      toast.error("فشل في حذف العميل");
+    },
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   if (isLoadingAllCli) return <Loading />;
 
-  // 3. منطق الفلترة (البحث بالاسم أو رقم الهاتف)
   const filteredClients = (allCliData || []).filter((customer: Customer) => {
     const term = searchQuery.toLowerCase();
     return (
@@ -44,23 +77,35 @@ export default function Users() {
     );
   });
 
-  const clientList = filteredClients; // نستخدم المصفوفة المفلترة بدلاً من الأصلية
-  const totalClients = clientList.length;
-
-  const itemsPerPage = 10;
+  const totalClients = filteredClients.length;
   const totalPages = Math.ceil(totalClients / itemsPerPage) || 1;
-  const currentPage = 1;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredClients.slice(indexOfFirstItem, indexOfLastItem);
 
   const getPaginationGroup = () => {
-    if (totalPages <= 4) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages: (number | string)[] = [];
+    const range = 1;
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > range + 2) pages.push("...");
+      const start = Math.max(2, currentPage - range);
+      const end = Math.min(totalPages - 1, currentPage + range);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - range - 1) pages.push("...");
+      pages.push(totalPages);
     }
-    return [1, 2, 3, "...", totalPages];
+    return pages;
   };
 
-  const hasData = allCliData && allCliData.length > 0;
+  const openDeleteModal = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setIsDeleteModalOpen(true);
+  };
 
-  if (!hasData) {
+  if (!allCliData || allCliData.length === 0) {
     return <NotFoundData />;
   }
 
@@ -71,27 +116,73 @@ export default function Users() {
       className="p-4 md:p-6 bg-[#fcfcfc] dark:bg-[#0F172A] min-h-screen transition-colors duration-300"
       dir="rtl"
     >
+      {/* ⚠️ مودال الحذف المضاف */}
+      <AnimatePresence>
+        {isDeleteModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => !isDeleting && setIsDeleteModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white dark:bg-[#1E293B] w-full max-w-md rounded-2xl p-8 shadow-2xl text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center mb-4 text-red-500">
+                <IoAlertCircleOutline size={60} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                تأكيد الحذف
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-8">
+                هل أنت متأكد من حذف العميل{" "}
+                <span className="font-bold text-gray-900 dark:text-white">
+                  "{selectedCustomer?.fullName}"
+                </span>
+                ؟
+              </p>
+              <div className="flex gap-3">
+                <button
+                  disabled={isDeleting}
+                  onClick={() =>
+                    selectedCustomer && deleteMutate(selectedCustomer.userId)
+                  }
+                  className="flex-1 px-6 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all disabled:opacity-50"
+                >
+                  {isDeleting ? "جاري الحذف..." : "نعم، احذف"}
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl font-bold"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row justify-between items-center mb-6 gap-4">
         <div className="relative w-full lg:w-1/3">
           <input
             type="text"
             placeholder="بحث برقم الهاتف أو اسم العميل..."
-            value={searchQuery} // 4. ربط القيمة بالحالة
-            onChange={(e) => setSearchQuery(e.target.value)} // 5. تحديث الحالة عند الكتابة
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-slate-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
           />
           <IoSearchOutline
             className="absolute left-3 top-3 text-gray-400 dark:text-gray-500"
             size={18}
           />
-        </div>
-
-        <div className="flex gap-2 w-full lg:w-auto">
-          <button className="border cursor-pointer border-gray-200 dark:border-slate-800 bg-white dark:bg-[#1E293B] text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-95">
-            <IoFilter size={18} />
-            <span>تصفية</span>
-          </button>
         </div>
       </div>
 
@@ -107,8 +198,7 @@ export default function Users() {
         </div>
 
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-slate-700">
-          {/* عرض رسالة "لا توجد نتائج" داخل الجدول إذا كان البحث لا يطابق أحد */}
-          {clientList.length === 0 ? (
+          {currentItems.length === 0 ? (
             <div className="p-10 text-center text-gray-400">
               لا توجد نتائج تطابق بحثك
             </div>
@@ -137,10 +227,10 @@ export default function Users() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
-                key={searchQuery} // إعادة تشغيل الأنيميشن عند كل بحث جديد
+                key={`${searchQuery}-${currentPage}`}
                 className="divide-y divide-gray-50 dark:divide-slate-800"
               >
-                {clientList.map((customer: Customer) => (
+                {currentItems.map((customer: Customer) => (
                   <motion.tr
                     variants={itemVariants}
                     key={customer.userId}
@@ -149,7 +239,10 @@ export default function Users() {
                     <td className="px-6 py-4 flex items-center gap-3">
                       <img
                         src={customer.profileImageURL}
-                        alt=""
+                        alt={customer.fullName}
+                        onError={(e) => {
+                          e.currentTarget.src = imgNotFound;
+                        }}
                         className="w-9 h-9 rounded-full object-cover border border-gray-100 dark:border-slate-700 shrink-0"
                       />
                       <span className="font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
@@ -173,28 +266,34 @@ export default function Users() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 rounded-md text-[11px] font-bold inline-block whitespace-nowrap ${
-                          customer.isActive
+                          customer.state === "Active"
                             ? "bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
-                            : "bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400"
+                            : customer.state === "Pending"
+                              ? "bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400"
+                              : "bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400"
                         }`}
                       >
-                        {customer.isActive ? "نشط" : "محظور"}
+                        {customer.state === "Active"
+                          ? "تمت الموافقة"
+                          : customer.state === "Pending"
+                            ? "قيد المراجعة"
+                            : "تم الرفض"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-3 md:gap-4 text-gray-400 dark:text-slate-600">
                         <Link
                           to={`/DetailsUsers/${customer.userId}`}
-                          title="عرض التفاصيل"
                           className="hover:text-blue-500 dark:hover:text-blue-400 cursor-pointer transition-all hover:scale-110"
                         >
                           <IoEyeOutline size={20} />
                         </Link>
                         <button
-                          title="حظر العميل"
-                          className={`hover:text-red-500 dark:hover:text-red-400 cursor-pointer transition-all hover:scale-110 ${!customer.isActive ? "text-red-300 dark:text-red-900" : ""}`}
+                          title="delete"
+                          onClick={() => openDeleteModal(customer)}
+                          className="text-gray-300 cursor-pointer ms-2 dark:text-slate-600 hover:text-red-500 transition-all hover:scale-110 inline-block"
                         >
-                          <MdBlock size={18} />
+                          <MdOutlineDeleteOutline size={20} />
                         </button>
                       </div>
                     </td>
@@ -209,8 +308,10 @@ export default function Users() {
         <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-slate-500">
           <div className="flex items-center gap-2 order-1 md:order-2">
             <button
-              title="السابق"
-              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+              title="previous"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <HiChevronRight size={20} />
             </button>
@@ -218,13 +319,15 @@ export default function Users() {
               {getPaginationGroup().map((page, i) => (
                 <button
                   key={i}
-                  disabled={page === "..."}
+                  onClick={() =>
+                    typeof page === "number" && setCurrentPage(page)
+                  }
                   className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all 
-                    ${page === "..." ? "cursor-default border-transparent" : "cursor-pointer active:scale-90"}
+                    ${page === "..." ? "cursor-default border-transparent opacity-50" : "cursor-pointer active:scale-90"}
                     ${
                       page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100 dark:shadow-none"
-                        : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 bg-white dark:bg-[#0F172A]"
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 hover:border-blue-300 bg-white dark:bg-[#0F172A]"
                     }`}
                 >
                   {page}
@@ -233,25 +336,29 @@ export default function Users() {
             </div>
             <button
               title="next"
-              className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <HiChevronLeft size={20} />
             </button>
           </div>
 
           <div className="order-1 sm:order-2 text-xs md:text-sm">
-            عرض
+            عرض{" "}
             <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
-              1
+              {totalClients === 0 ? 0 : indexOfFirstItem + 1}
             </span>
-            إلى
+            إلى{" "}
             <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
-              {clientList.length}
+              {Math.min(indexOfLastItem, totalClients)}
             </span>
-            من أصل
+            من أصل{" "}
             <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
               {totalClients}
-            </span>
+            </span>{" "}
             عميل
           </div>
         </div>

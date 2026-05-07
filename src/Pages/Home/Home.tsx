@@ -15,12 +15,13 @@ import {
 import { FiUsers, FiTool, FiCheckCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { getClientsCount } from "../../APIs/getClientsCount.api";
-import { useQuery } from "@tanstack/react-query";
 import { getCountTechnicians } from "../../APIs/getCountTechnicians.api";
 import Loading from "../../Components/Shared/Loading/Loading";
 import { getAllTechnicians } from "../../APIs/GetAllTechnicians.api";
 import type { StatCardProps, Technician } from "../../interfaces/interfaces";
 import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
+import { useQuery } from "@tanstack/react-query";
+import { CountCompletedOrders } from "../../APIs/CountCompletedOrders.api";
 
 const COLORS = [
   "#3B82F6",
@@ -36,26 +37,10 @@ const itemAnim = {
   visible: { opacity: 1, y: 0 },
 };
 
-const LATEST_ORDERS = [
-  {
-    id: "#1209",
-    client: "عمر خالد",
-    technician: "محمد أحمد",
-    status: "مكتمل",
-    statusColor:
-      "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
-  },
-  {
-    id: "#1210",
-    client: "أحمد علي",
-    technician: "ياسر علي",
-    status: "قيد التنفيذ",
-    statusColor:
-      "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400",
-  },
-];
+
 
 export default function Home() {
+
   const { data: clientsData, isLoading: isLoadingClients } = useQuery({
     queryKey: ["clientsCount"],
     queryFn: getClientsCount,
@@ -72,7 +57,16 @@ export default function Home() {
     queryKey: ["GetAllTechnicians"],
     queryFn: getAllTechnicians,
   });
+
+  const { data: countCompletedOrders, isLoading: isLoadingCountCompletedOrders } = useQuery<
+    Technician[]
+  >({
+    queryKey: ["CountCompletedOrders"],
+    queryFn: CountCompletedOrders,
+  });
+  console.log(countCompletedOrders);
   
+
 
   const dynamicLineData = useMemo(() => {
     const days = [
@@ -108,19 +102,11 @@ export default function Home() {
     return Object.entries(categories).map(([name, value]) => ({ name, value }));
   }, [allTechData]);
 
-  const pendingTechnicians = useMemo(() => {
-    return allTechData?.filter((tech) => !tech.isActive).slice(0, 3) || [];
-  }, [allTechData]);
 
-  if (isLoadingClients || isLoadingTech || isLoadingAllTech) return <Loading />;
+  if (isLoadingClients || isLoadingTech || isLoadingAllTech || isLoadingCountCompletedOrders) return <Loading />;
 
   const hasData = allTechData && allTechData.length > 0;
-
-  if (!hasData) {
-    return (
-      <NotFoundData/>
-    );
-  }
+  if (!hasData) return <NotFoundData />;
 
   const totalUsers = (clientsData || 0) + (techData || 0);
 
@@ -145,7 +131,7 @@ export default function Home() {
       id: 3,
       title: "الطلبات المكتملة",
       value:
-        allTechData?.reduce((acc, curr) => acc + curr.completedJobs, 0) || "0",
+        countCompletedOrders !== undefined ? countCompletedOrders : 0,
       icon: <FiCheckCircle />,
       color: "border-purple-500",
       iconBg: "bg-purple-50 dark:bg-purple-900/20 text-purple-500",
@@ -168,10 +154,10 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div
           variants={itemAnim}
-          className="lg:col-span-2 bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800"
+          className="col-span-3 lg:col-span-1 bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800"
         >
           <h3 className="text-xl font-bold mb-6 text-slate-800 dark:text-white">
             معدل انضمام الحرفيين
@@ -224,12 +210,12 @@ export default function Home() {
 
         <motion.div
           variants={itemAnim}
-          className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center"
+          className="bg-white col-span-3 lg:col-span-1 dark:bg-[#1E293B] p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col items-center"
         >
           <h3 className="text-xl font-bold mb-6 w-full text-right text-slate-800 dark:text-white">
             توزيع تخصصات الحرفيين
           </h3>
-          <div className="h-64 w-full">
+          <div className="h-100 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -265,39 +251,11 @@ export default function Home() {
           </div>
         </motion.div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <motion.div variants={itemAnim}>
-          <ListContainer title="طلبات انضمام معلقة">
-            {pendingTechnicians.length > 0 ? (
-              pendingTechnicians.map((tech) => (
-                <JoinRequestItem
-                  key={tech.userId}
-                  name={tech.fullname}
-                  craft={tech.serviceCategory}
-                />
-              ))
-            ) : (
-              <p className="bg-white dark:bg-[#1E293B] p-8 text-center text-slate-400 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 font-bold">
-                لا توجد طلبات معلقة
-              </p>
-            )}
-          </ListContainer>
-        </motion.div>
-
-        <motion.div variants={itemAnim}>
-          <ListContainer title="أحدث الطلبات">
-            {LATEST_ORDERS.map((order, index) => (
-              <OrderItem key={index} {...order} />
-            ))}
-          </ListContainer>
-        </motion.div>
-      </div>
     </motion.div>
   );
 }
 
-// --- المكونات الفرعية (نفس الديزاين بدون تغيير شبر) ---
+
 
 const StatCard = ({ title, value, icon, color, iconBg }: StatCardProps) => (
   <div
@@ -315,60 +273,6 @@ const StatCard = ({ title, value, icon, color, iconBg }: StatCardProps) => (
   </div>
 );
 
-const ListContainer = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <div className="space-y-4">
-    <h3 className="text-xl font-black text-slate-800 dark:text-white mr-2">
-      {title}
-    </h3>
-    <div className="flex flex-col gap-3">{children}</div>
-  </div>
-);
 
-const JoinRequestItem = ({ name, craft }: { name: string; craft: string }) => (
-  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all text-right">
-    <div className="flex items-center gap-4">
-      <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center font-bold text-slate-500 dark:text-slate-400">
-        {name[0]}
-      </div>
-      <div>
-        <p className="font-bold text-slate-800 dark:text-gray-200">{name}</p>
-        <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-          {craft}
-        </p>
-      </div>
-    </div>
-    <div className="flex gap-2">
-      <button className="bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-blue-700">
-        قبول
-      </button>
-      <button className="bg-red-50 cursor-pointer dark:bg-red-900/10 text-red-500 px-5 py-2 rounded-xl text-xs font-bold hover:bg-red-100">
-        رفض
-      </button>
-    </div>
-  </div>
-);
 
-const OrderItem = ({ id, client, technician, status, statusColor }: {id:string, client:string, technician:string, status:string, statusColor:string}) => (
-  <div className="bg-white dark:bg-[#1E293B] p-4 rounded-2xl shadow-sm border border-slate-50 dark:border-slate-800 flex items-center justify-between hover:shadow-md transition-all text-right">
-    <div className="flex flex-col">
-      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">
-        {id}
-      </span>
-      <p className="font-bold text-slate-800 dark:text-gray-200 text-sm">
-        العميل: {client}
-      </p>
-      <p className="text-xs text-slate-400 dark:text-slate-500">
-        الحرفي: {technician}
-      </p>
-    </div>
-    <span className={`${statusColor} px-4 py-2 rounded-xl text-xs font-black`}>
-      {status}
-    </span>
-  </div>
-);
+

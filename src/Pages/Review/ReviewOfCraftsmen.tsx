@@ -1,24 +1,47 @@
-import { motion } from "framer-motion";
-import { IoSearchOutline, IoFilter, IoEyeOutline } from "react-icons/io5";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  IoSearchOutline,
+  IoEyeOutline,
+  IoAlertCircleOutline,
+} from "react-icons/io5";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi";
 import { Link } from "react-router-dom";
 import type { Technician } from "../../interfaces/interfaces";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllTechnicians } from "../../APIs/GetAllTechnicians.api";
+import { deleteTechnician } from "../../APIs/DeleteTechnician.api";
 import Loading from "../../Components/Shared/Loading/Loading";
 import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
 import { useState } from "react";
+import { MdOutlineDeleteOutline } from "react-icons/md";
+import { toast } from "react-toastify";
 
 export default function ReviewOfCraftsmen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const itemsPerPage = 6;
+  const queryClient = useQueryClient();
 
+  // جلب البيانات
   const { data: allTechData, isLoading: isLoadingAllTech } = useQuery<
     Technician[]
   >({
     queryKey: ["GetAllTechnicians"],
     queryFn: getAllTechnicians,
+  });
+
+  // Mutation الحذف
+  const { mutate: deleteMutate, isPending: isDeleting } = useMutation({
+    mutationFn: (id: string) => deleteTechnician(id),
+    onSuccess: () => {
+      toast.success("تم حذف الفني بنجاح");
+      queryClient.invalidateQueries({ queryKey: ["GetAllTechnicians"] });
+      setDeleteId(null);
+    },
+    onError: () => {
+      toast.error("فشل في حذف الفني (تأكد من السيرفر)");
+    },
   });
 
   if (isLoadingAllTech) return <Loading />;
@@ -40,18 +63,24 @@ export default function ReviewOfCraftsmen() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
+  // منطق الترقيم الذكي (Pagination Logic)
   const getPageNumbers = () => {
-    const pages = [];
-    if (totalPages <= 4) {
+    const pages: (number | string)[] = [];
+    const range = 1;
+
+    if (totalPages <= 3) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
-      if (currentPage <= 2) {
-        pages.push(1, 2, 3, "...", totalPages);
-      } else if (currentPage >= totalPages - 1) {
-        pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, "...", currentPage, "...", totalPages);
-      }
+      pages.push(1);
+      if (currentPage > range + 2) pages.push("...");
+
+      const start = Math.max(2, currentPage - range);
+      const end = Math.min(totalPages - 1, currentPage + range);
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (currentPage < totalPages - range - 1) pages.push("...");
+      pages.push(totalPages);
     }
     return pages;
   };
@@ -65,7 +94,7 @@ export default function ReviewOfCraftsmen() {
       className="p-4 md:p-6 bg-[#fcfcfc] dark:bg-[#0F172A] min-h-screen transition-colors duration-300"
       dir="rtl"
     >
-      {/* Header Search & Filter */}
+      {/* Header Search */}
       <div className="flex justify-between items-center mb-6 gap-4">
         <div className="relative w-full md:w-1/3">
           <input
@@ -83,13 +112,9 @@ export default function ReviewOfCraftsmen() {
             size={18}
           />
         </div>
-        <button className="border cursor-pointer border-gray-200 dark:border-slate-800 bg-white dark:bg-[#1E293B] text-gray-600 dark:text-gray-400 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
-          <IoFilter size={18} />
-          <span>تصفية</span>
-        </button>
       </div>
 
-      {/* Main Table Container */}
+      {/* Table Container */}
       <div className="bg-white dark:bg-[#1E293B] rounded-xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
         <div className="p-4 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center">
           <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-3">
@@ -100,7 +125,7 @@ export default function ReviewOfCraftsmen() {
           </h2>
         </div>
 
-        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200">
+        <div className="overflow-x-auto">
           {!hasData ? (
             <NotFoundData />
           ) : (
@@ -148,10 +173,10 @@ export default function ReviewOfCraftsmen() {
                         {tech.serviceCategory}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400 tracking-wide text-sm">
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400 text-sm">
                       {tech.experienceYears} سنوات
                     </td>
-                    <td className="px-6 py-4 text-gray-500 dark:text-gray-500 text-sm">
+                    <td className="px-6 py-4 text-gray-500 text-sm">
                       {new Date(tech.createdAt).toLocaleDateString("ar-EG", {
                         day: "numeric",
                         month: "long",
@@ -161,21 +186,33 @@ export default function ReviewOfCraftsmen() {
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 rounded-md text-[11px] font-bold ${
-                          !tech.isActive
-                            ? "bg-orange-50 dark:bg-orange-900/20 text-orange-400 border border-orange-100 dark:border-orange-900/30"
-                            : "bg-green-50 dark:bg-green-900/20 text-green-500 border border-green-100 dark:border-green-900/30"
+                          tech.state === "Active"
+                            ? "bg-green-50 dark:bg-green-900/20 text-green-500  "
+                            : tech.state === "Rejected"
+                              ? "bg-red-50 dark:bg-red-900/20 text-red-500  "
+                              : "bg-orange-50 dark:bg-orange-900/20 text-orange-400  "
                         }`}
                       >
-                        {tech.isActive ? "تمت الموافقة" : "قيد المراجعة"}
+                        {tech.state === "Active"
+                          ? "تمت الموافقة"
+                          : tech.state === "Rejected"
+                            ? "تم الرفض"
+                            : "قيد المراجعة"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Link
                         to={`/detailsReview/${tech.userId}`}
-                        className="text-gray-300 dark:text-slate-600 hover:text-blue-500 dark:hover:text-blue-400 transition-all hover:scale-110 inline-block"
+                        className="text-gray-300 dark:text-slate-600 hover:text-blue-500 transition-all hover:scale-110 inline-block"
                       >
                         <IoEyeOutline size={20} />
                       </Link>
+                      <button title="delete"
+                        onClick={() => setDeleteId(tech.userId)}
+                        className="text-gray-300 cursor-pointer ms-2 dark:text-slate-600 hover:text-red-500 transition-all hover:scale-110 inline-block"
+                      >
+                        <MdOutlineDeleteOutline size={20} />
+                      </button>
                     </td>
                   </motion.tr>
                 ))}
@@ -188,10 +225,10 @@ export default function ReviewOfCraftsmen() {
         <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <div className="flex items-center gap-2 order-1 md:order-2">
             <button
-              title="Previous Page"
+              title="previous"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 disabled:opacity-30 transition-all active:scale-90"
+              className="p-2.5 hover:border-blue-500 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl disabled:opacity-30 transition-all"
             >
               <HiChevronRight size={20} />
             </button>
@@ -202,24 +239,23 @@ export default function ReviewOfCraftsmen() {
                   onClick={() =>
                     typeof page === "number" && setCurrentPage(page)
                   }
-                  className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 
-                    ${
-                      page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                        : "border-gray-200 dark:border-slate-800 text-gray-500 hover:border-blue-300 bg-white dark:bg-[#0F172A]"
-                    } ${page === "..." ? "cursor-default border-none" : "cursor-pointer"}`}
+                  className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0F172A]"
+                  } ${page === "..." ? "cursor-default border-none opacity-50" : "cursor-pointer hover:border-blue-500"}`}
                 >
                   {page}
                 </button>
               ))}
             </div>
             <button
-              title="Next Page"
+              title="next"
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
               disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 disabled:opacity-30 transition-all active:scale-90"
+              className="p-2.5 cursor-pointer hover:border-blue-600 border border-gray-200 dark:border-slate-800 rounded-xl disabled:opacity-30 transition-all"
             >
               <HiChevronLeft size={20} />
             </button>
@@ -227,21 +263,68 @@ export default function ReviewOfCraftsmen() {
 
           <div className="order-1 sm:order-2 dark:text-slate-400">
             عرض
-            <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
+            <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
               {totalItems === 0 ? 0 : indexOfFirstItem + 1}
             </span>
             إلى
-            <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
+            <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
               {Math.min(indexOfLastItem, totalItems)}
             </span>
             من أصل
-            <span className="font-semibold text-gray-700 dark:text-slate-200 mx-1">
+            <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
               {totalItems}
             </span>
-            طلب
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteId && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => !isDeleting && setDeleteId(null)}
+            className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm cursor-pointer"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-[#1E293B] w-full max-w-md p-8 rounded-3xl shadow-2xl text-center border border-gray-100 dark:border-gray-800 cursor-default"
+            >
+              <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <IoAlertCircleOutline size={48} />
+              </div>
+              <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-2">
+                تأكيد الحذف
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+                هل أنت متأكد من حذف هذا الفني؟ <br /> هذا الإجراء سيقوم بإزالة
+                كافة البيانات ولا يمكن التراجع عنه.
+              </p>
+              <div className="flex gap-4">
+                <button
+                  disabled={isDeleting}
+                  onClick={() => deleteId && deleteMutate(deleteId)}
+                  className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all shadow-lg shadow-red-500/30 disabled:opacity-50"
+                >
+                  {isDeleting ? "جاري الحذف..." : "نعم، احذف الفني"}
+                </button>
+                <button
+                  disabled={isDeleting}
+                  onClick={() => setDeleteId(null)}
+                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                >
+                  تراجع
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

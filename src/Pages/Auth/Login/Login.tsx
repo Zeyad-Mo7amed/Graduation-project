@@ -2,7 +2,7 @@ import { AiOutlineSafety } from "react-icons/ai";
 import { BsLightning } from "react-icons/bs";
 import { CiCircleCheck } from "react-icons/ci";
 import { MdHome } from "react-icons/md";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import image from "../../../assets/d8a78d15c9e73a84c13f2eb5a78a8639ef8e0f7a.png";
 import icone from "../../../assets/Maintenance-cuate1.png";
 import * as z from "zod";
@@ -192,12 +192,6 @@ export default function Login() {
                       {errors.password.message}
                     </p>
                   )}
-                  <Link
-                    className="text-sm text-primary-600 hover:text-primary-700 cursor-pointer font-medium mt-2 inline-block"
-                    to="/forget-password"
-                  >
-                    نسيت كلمه المرور؟
-                  </Link>
                 </div>
 
                 <button

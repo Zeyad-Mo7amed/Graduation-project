@@ -5,10 +5,14 @@ export const GetDetailsOrder = async (id: string | number) => {
   const token = localStorage.getItem("token");
   try {
     const response = await axios.get(
-      `${BASE_URL}api/Order/GetDetailsOrderAdmin/${id}`,
+      `${BASE_URL}api/Order/GetDetailsOrderAdmin`,
       {
+        params: {
+          orderId: id,
+        },
         headers: {
           Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       },
     );
