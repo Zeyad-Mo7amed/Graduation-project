@@ -5,8 +5,6 @@ import {
   FiClock,
   FiCalendar,
   FiMapPin,
-  FiPhone,
-  FiMessageCircle,
   FiFileText,
   FiExternalLink,
 } from "react-icons/fi";
@@ -22,7 +20,7 @@ import { GetDetailsOrder } from "../../../APIs/GetDetailsOrder.api";
 import Loading from "../Loading/Loading";
 import NotFoundData from "../NotFoundData/NotFoundData";
 import type { OrderDetails } from "../../../interfaces/interfaces";
-
+import { useEffect, useState } from "react";
 
 const DefaultIcon = L.icon({
   iconUrl: icon,
@@ -30,6 +28,7 @@ const DefaultIcon = L.icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
+
 L.Marker.prototype.options.icon = DefaultIcon;
 
 const fadeInUp = {
@@ -46,14 +45,46 @@ export default function Details() {
     queryFn: () => GetDetailsOrder(id as string),
     enabled: !!id,
   });
+
   console.log(data);
   
+
+  const [location, setLocation] = useState<[number, number]>([
+    26.7696, 31.5021,
+  ]);
+
+  useEffect(() => {
+    if (!data?.placeDetails) return;
+
+    const getCoordinates = async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            data.placeDetails,
+          )}`,
+        );
+
+        const result = await response.json();
+
+        if (result && result.length > 0) {
+          setLocation([parseFloat(result[0].lat), parseFloat(result[0].lon)]);
+        }
+      } catch (error) {
+        console.error("Error fetching location:", error);
+      }
+    };
+
+    getCoordinates();
+  }, [data?.placeDetails]);
+
+  console.log(data);
+
   if (isLoading) return <Loading />;
   if (!data) return <NotFoundData />;
 
-  const tahtaCenter: [number, number] = [26.7696, 31.5021];
-
-  const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.placeDetails)}`;
+  const googleMapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    data.placeDetails,
+  )}`;
 
   const translateStatus = (state: string) => {
     const statuses: Record<string, string> = {
@@ -62,6 +93,7 @@ export default function Details() {
       "In Progress": "قيد التنفيذ",
       Canceled: "ملغي",
     };
+
     return statuses[state] || state;
   };
 
@@ -69,8 +101,10 @@ export default function Details() {
     switch (state) {
       case "Completed":
         return "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400";
+
       case "Canceled":
         return "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+
       default:
         return "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400";
     }
@@ -89,12 +123,16 @@ export default function Details() {
           <FiArrowLeft className="rotate-180" size={20} />
           <span>العودة للطلبات</span>
         </Link>
+
         <div className="flex items-center gap-3 bg-white dark:bg-[#1E293B] px-4 py-2 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
           <span className="text-slate-400 dark:text-gray-500 font-bold text-sm">
             حالة الطلب:
           </span>
+
           <span
-            className={`${getStatusColor(data.state)} font-black px-4 py-1 rounded-xl text-xs`}
+            className={`${getStatusColor(
+              data.state,
+            )} font-black px-4 py-1 rounded-xl text-xs`}
           >
             {translateStatus(data.state)}
           </span>
@@ -110,32 +148,39 @@ export default function Details() {
             <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-slate-800 dark:text-white">
               <FaWrench className="text-blue-500" /> تفاصيل الخدمة
             </h3>
+
             <div className="space-y-4">
               <DetailRow label="نوع الخدمة" value={data.serviceName} />
+
               <DetailRow
                 label="التاريخ المجدول"
                 value={new Date(data.scheduledDate).toLocaleDateString("ar-EG")}
                 icon={<FiCalendar />}
               />
+
               <DetailRow
                 label="الوقت المجدول"
                 value={data.scheduledTime}
                 icon={<FiClock />}
               />
+
               <div className="mt-6">
                 <p className="text-slate-400 dark:text-gray-500 font-bold mb-3 text-sm">
                   وصف المشكلة
                 </p>
+
                 <div className="bg-slate-50 dark:bg-[#0F172A] p-5 rounded-2xl border border-slate-100 dark:border-gray-800">
                   <p className="text-slate-600 dark:text-gray-300 leading-relaxed text-sm font-medium">
                     {data.problemDetails}
                   </p>
                 </div>
               </div>
+
               <div className="mt-6">
                 <p className="text-slate-400 dark:text-gray-500 font-bold mb-3 text-sm">
                   الصور المرفقة
                 </p>
+
                 <div className="flex gap-3">
                   {data.workImage ? (
                     <img
@@ -164,16 +209,20 @@ export default function Details() {
                 {data.state === "Completed" ? "تم السداد" : "بانتظار السداد"}
               </span>
             </h3>
+
             <div className="space-y-4">
               <PriceRow
                 label="رسوم الخدمة (الكشفية)"
                 value={data.inspectedPrice}
               />
+
               <PriceRow label="تكلفة الخدمة" value={data.afterPrice} />
+
               <div className="border-t border-dashed border-slate-200 dark:border-gray-700 pt-4 mt-4 flex justify-between items-end">
                 <p className="font-black text-slate-800 dark:text-white text-xl">
                   الإجمالي
                 </p>
+
                 <p className="text-blue-600 dark:text-blue-400 font-black text-3xl">
                   <span className="text-sm ml-1">ج.م</span>{" "}
                   {data.finalPrice.toFixed(2)}
@@ -190,19 +239,22 @@ export default function Details() {
             className="bg-white dark:bg-[#1E293B] p-6 rounded-[12px] shadow-sm border border-slate-50 dark:border-gray-800"
           >
             <h3 className="text-lg font-black mb-6 flex items-center gap-2 dark:text-white">
-              <span className="w-2 h-2 rounded-full bg-blue-500"></span> بيانات
-              العميل
+              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+              بيانات العميل
             </h3>
+
             <div className="flex items-center gap-4 mb-6">
               <img
                 src={data.imageCliURL || "https://via.placeholder.com/150"}
                 className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700 object-cover"
                 alt="client"
               />
+
               <div className="flex-1 text-right">
                 <p className="font-black text-slate-800 dark:text-white text-lg">
                   {data.nameClient}
                 </p>
+
                 <a
                   href={data.phoneClient ? `tel:${data.phoneClient}` : "#"}
                   className="text-slate-400 dark:text-gray-500 font-bold text-sm hover:text-blue-500 transition-colors"
@@ -220,6 +272,7 @@ export default function Details() {
               <span className="text-[#2B323B] dark:text-gray-200 font-bold ms-2 text-lg whitespace-nowrap">
                 عنوان الخدمة
               </span>
+
               <div className="text-blue-500 shrink-0">
                 <FiMapPin size={22} />
               </div>
@@ -240,58 +293,53 @@ export default function Details() {
               </a>
 
               <MapContainer
-                center={tahtaCenter}
+                center={location}
                 zoom={13}
                 style={{ height: "100%", width: "100%" }}
+                key={`${location[0]}-${location[1]}`}
               >
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <Marker position={tahtaCenter}>
+
+                <Marker position={location}>
                   <Popup>{data.placeDetails}</Popup>
                 </Marker>
               </MapContainer>
             </div>
           </motion.div>
 
-          {/* بيانات الحرفي */}
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.3 }}
             className="bg-white dark:bg-[#1E293B] p-6 rounded-[2.5rem] shadow-sm border border-slate-50 dark:border-gray-800"
           >
             <h3 className="text-lg font-black mb-6 flex items-center gap-2 dark:text-white">
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>{" "}
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               بيانات الحرفي
             </h3>
+
             <div className="flex items-center gap-4 mb-8">
               <img
                 src={data.imageTecUrl || "https://via.placeholder.com/150"}
                 className="w-16 h-16 rounded-full border-2 border-slate-100 dark:border-gray-700 object-cover"
                 alt="tech"
               />
+
               <div className="flex-1 text-right">
                 <p className="font-black text-slate-800 dark:text-white text-lg">
                   {data.nameTec || "بانتظار قبول فني"}
                 </p>
+
                 <p className="text-blue-500 dark:text-blue-400 font-bold text-xs">
                   {data.serviceName}
                 </p>
               </div>
+
               <div className="bg-slate-50 dark:bg-[#0F172A] p-3 rounded-2xl text-center border border-slate-100 dark:border-gray-800">
                 <div className="flex items-center gap-1 text-amber-500 font-black justify-center">
-                  <FaStar size={12} /> {data.ratingAvg}
+                  <FaStar size={12} />
+                  {Math.floor(Number(data.ratingAvg) * 10) / 10}
                 </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <a
-                href={data.phoneClient ? `tel:${data.phoneClient}` : "#"}
-                className="bg-blue-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-lg"
-              >
-                اتصال <FiPhone />
-              </a>
-              <button className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-4 rounded-2xl font-black flex items-center justify-center gap-2 border border-blue-100 dark:border-blue-900/30">
-                مراسلة <FiMessageCircle />
-              </button>
             </div>
           </motion.div>
         </div>
@@ -313,8 +361,10 @@ const DetailRow = ({
     <p className="text-slate-400 dark:text-gray-500 font-bold text-sm">
       {label}
     </p>
+
     <div className="flex items-center gap-2 text-slate-800 dark:text-gray-200 font-black text-sm">
-      {value}{" "}
+      {value}
+
       {icon && (
         <span className="text-slate-300 dark:text-gray-600">{icon}</span>
       )}
@@ -327,6 +377,7 @@ const PriceRow = ({ label, value }: { label: string; value: number }) => (
     <p className="text-slate-500 dark:text-gray-400 font-bold text-sm">
       {label}
     </p>
+
     <p className="text-slate-800 dark:text-white font-black text-lg">
       <span className="text-[10px] ml-1">ج.م</span> {value.toFixed(2)}
     </p>

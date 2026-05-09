@@ -1,4 +1,4 @@
-import { FiSearch, FiFilter, FiEye } from "react-icons/fi";
+import { FiSearch,  FiEye } from "react-icons/fi";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
 import { MdFiberManualRecord } from "react-icons/md";
 import { Link } from "react-router-dom";
@@ -6,22 +6,14 @@ import { GetAllComplaints } from "../../APIs/GetAllComplaints.api";
 import { useQuery } from "@tanstack/react-query";
 import Loading from "../../Components/Shared/Loading/Loading";
 import { useState } from "react";
+import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
+import type { Complaint } from "../../interfaces/interfaces";
 
-// --- TypeScript Interfaces ---
-interface Complaint {
-  id: number;
-  orderId: number;
-  title: string;
-  userName: string;
-  userRole: string;
-  status: string; // تم التغيير إلى string ليتوافق مع الـ API (Submitted, Resolved, etc)
-  createdAt: string;
-  response: string | null;
-  userId: string;
-}
+
 
 export default function Support() {
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>(""); // حالة البحث
 
   const { data: allComplaints, isLoading: isAllComplaintsLoading } =
     useQuery<any>({
@@ -34,13 +26,30 @@ export default function Support() {
     ? allComplaints
     : allComplaints?.data || [];
 
-  const apiTotalPages =
-    allComplaints?.totalPages || Math.ceil(complaintsData.length / 10) || 1;
-  const totalCount = allComplaints?.totalCount || complaintsData.length;
+  // --- منطق البحث المضاف ---
+  const filteredComplaints = complaintsData.filter((complaint) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      complaint.userName.toLowerCase().includes(search) ||
+      complaint.id.toString().includes(search) ||
+      complaint.orderId.toString().includes(search)
+    );
+  });
+
+  const apiTotalPages = Math.ceil(filteredComplaints.length / 10) || 1;
+  const totalCount = filteredComplaints.length;
+
+  // Pagination Logic للبيانات المفلترة
+  const itemsPerPage = 10;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentComplaints = filteredComplaints.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
 
   const renderPagination = () => {
     const pages: (number | string)[] = [];
-
     if (apiTotalPages <= 2) {
       for (let i = 1; i <= apiTotalPages; i++) pages.push(i);
     } else {
@@ -53,16 +62,14 @@ export default function Support() {
     return pages;
   };
 
-  if (isAllComplaintsLoading) {
-    return <Loading />;
-  }
+  if (isAllComplaintsLoading) return <Loading />;
+  if (!complaintsData.length) return <NotFoundData />;
 
-  // Helper Styles - التعامل مع الحالة بنظام الـ String
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "Submitted":
         return "text-red-500 bg-red-50 dark:bg-red-900/20 dark:text-red-400";
-      case "InReview": // أو أي حالة وسيطة تانية بيرجعها الـ API عندك
+      case "InReview":
       case "UnderProcess":
         return "text-amber-500 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400";
       case "Resolved":
@@ -84,7 +91,7 @@ export default function Support() {
       case "InReview":
         return "قيد المراجعة";
       default:
-        return status; // يعرض النص القادم من الـ API لو غير معروف
+        return status;
     }
   };
 
@@ -99,14 +106,15 @@ export default function Support() {
           <FiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 size-5" />
           <input
             type="text"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // العودة للصفحة الأولى عند البحث
+            }}
             placeholder="بحث برقم التذكرة أو اسم صاحب الشكوى..."
             className="w-full pr-10 pl-4 py-2 bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-slate-200 text-sm"
           />
         </div>
-        <button className="w-full cursor-pointer md:w-auto flex items-center justify-center gap-2 px-4 py-2 border border-gray-100 dark:border-slate-700 rounded-lg text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all bg-white dark:bg-[#1e293b]">
-          <FiFilter className="size-4" />
-          <span className="text-sm font-bold">تصفية</span>
-        </button>
       </div>
 
       {/* Main Container */}
@@ -119,8 +127,9 @@ export default function Support() {
             <span className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold flex items-center gap-1">
               <MdFiberManualRecord className="size-3 animate-pulse" />
               {
-                complaintsData.filter((c) => c.status === "Submitted").length
-              }{" "}
+                filteredComplaints.filter((c) => c.status === "Submitted")
+                  .length
+              }
               تذكرة مفتوحة
             </span>
           </div>
@@ -140,118 +149,138 @@ export default function Support() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-700/50">
-              {complaintsData.map((complaint) => (
-                <tr
-                  key={complaint.id}
-                  className="hover:bg-gray-50/40 dark:hover:bg-slate-800/30 transition-colors"
-                >
-                  <td className="p-4 font-bold text-xs md:text-sm text-gray-900 dark:text-slate-200">
-                    TCK-{complaint.id}
-                  </td>
-                  <td className="p-4 text-gray-800 dark:text-slate-300">
-                    <div className="flex items-center gap-2 md:gap-3 text-right min-w-[120px]">
-                      <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-slate-200 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 overflow-hidden flex-shrink-0">
-                        <img
-                          src={`https://ui-avatars.com/api/?name=${complaint.userName}&background=random&color=fff`}
-                          alt=""
-                        />
+              {filteredComplaints.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-20 text-center">
+                    <div className="flex flex-col items-center justify-center gap-4">
+                      <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center">
+                        <FiSearch className="text-slate-300 dark:text-slate-500 text-4xl" />
                       </div>
-                      <div className="truncate">
-                        <div className="font-bold text-xs md:text-sm leading-tight truncate">
-                          {complaint.userName}
-                        </div>
-                        <div
-                          className={`text-[9px] md:text-[10px] font-bold ${complaint.userRole === "Client" ? "text-blue-500" : "text-purple-400"}`}
-                        >
-                          {complaint.userRole === "Client"
-                            ? "عميل"
-                            : complaint.userRole}
-                        </div>
+                      <div>
+                        <p className="text-slate-600 dark:text-slate-300 font-bold text-lg">
+                          لا توجد نتائج تطابق بحثك
+                        </p>
+                        <p className="text-slate-400 text-sm mt-1">
+                          جرب البحث بكلمات أخرى أو تأكد من البيانات
+                        </p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-4 text-gray-400 dark:text-slate-500 text-[13px] whitespace-nowrap">
-                    ORD-{complaint.orderId}
-                  </td>
-                  <td className="p-4 text-xs md:text-sm font-medium text-gray-700 dark:text-slate-300 max-w-[200px] truncate">
-                    {complaint.title}
-                  </td>
-                  <td className="p-4 text-[11px] text-gray-400 dark:text-slate-500 whitespace-nowrap">
-                    {new Date(complaint.createdAt).toLocaleDateString("ar-EG")}
-                  </td>
-                  <td className="p-4 text-center">
-                    <span
-                      className={`inline-block px-2 md:px-3 py-1 rounded-md text-[9px] md:text-[11px] font-bold shadow-sm whitespace-nowrap ${getStatusStyle(complaint.status)}`}
-                    >
-                      {getStatusText(complaint.status)}
-                    </span>
-                  </td>
-                  <td className="p-4 text-center">
-                    <Link
-                      to={`/SupportDetails/${complaint.id}`}
-                      className="text-gray-300 cursor-pointer dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
-                      <FiEye className="size-4 md:size-5 mx-auto" />
-                    </Link>
-                  </td>
                 </tr>
-              ))}
+              ) : (
+                currentComplaints.map((complaint) => (
+                  <tr
+                    key={complaint.id}
+                    className="hover:bg-gray-50/40 dark:hover:bg-slate-800/30 transition-colors"
+                  >
+                    <td className="p-4 font-bold text-xs md:text-sm text-gray-900 dark:text-slate-200">
+                      TCK-{complaint.id}
+                    </td>
+                    <td className="p-4 text-gray-800 dark:text-slate-300">
+                      <div className="flex items-center gap-2 md:gap-3 text-right min-w-[120px]">
+                        <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-slate-200 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 overflow-hidden flex-shrink-0">
+                          <img
+                            src={`https://ui-avatars.com/api/?name=${complaint.userName}&background=random&color=fff`}
+                            alt=""
+                          />
+                        </div>
+                        <div className="truncate">
+                          <div className="font-bold text-xs md:text-sm leading-tight truncate">
+                            {complaint.userName}
+                          </div>
+                          <div
+                            className={`text-[9px] md:text-[10px] font-bold ${complaint.userRole === "Client" ? "text-blue-500" : "text-purple-400"}`}
+                          >
+                            {complaint.userRole === "Client"
+                              ? "عميل"
+                              : complaint.userRole}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-gray-400 dark:text-slate-500 text-[13px] whitespace-nowrap">
+                      ORD-{complaint.orderId}
+                    </td>
+                    <td className="p-4 text-xs md:text-sm font-medium text-gray-700 dark:text-slate-300 max-w-[200px] truncate">
+                      {complaint.title}
+                    </td>
+                    <td className="p-4 text-[11px] text-gray-400 dark:text-slate-500 whitespace-nowrap">
+                      {new Date(complaint.createdAt).toLocaleDateString(
+                        "ar-EG",
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      <span
+                        className={`inline-block px-2 md:px-3 py-1 rounded-md text-[9px] md:text-[11px] font-bold shadow-sm whitespace-nowrap ${getStatusStyle(complaint.status)}`}
+                      >
+                        {getStatusText(complaint.status)}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <Link
+                        to={`/SupportDetails/${complaint.id}`}
+                        className="text-gray-300 cursor-pointer dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        <FiEye className="size-4 md:size-5 mx-auto" />
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination Section */}
-        <div className="p-4 bg-white dark:bg-[#1e293b] flex flex-col sm:row sm:flex-row items-center justify-between border-t border-gray-50 dark:border-slate-700/50 gap-4">
-          <div className="text-[10px] md:text-xs font-medium text-gray-400 dark:text-slate-500 order-2 sm:order-1">
-            عرض{" "}
-            <span className="text-gray-700 dark:text-slate-300 font-bold">
-              {complaintsData.length}
-            </span>{" "}
-            من{" "}
-            <span className="text-gray-700 dark:text-slate-300 font-bold">
-              {totalCount}
-            </span>{" "}
-            تذكرة
-          </div>
-          <div className="flex items-center gap-2 order-1 md:order-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-400 transition-all active:scale-90 disabled:opacity-50"
-            >
-              <HiChevronRight size={20} />
-            </button>
-            <div className="flex gap-1.5">
-              {renderPagination().map((page, i) => (
-                <button
-                  key={i}
-                  disabled={page === "..."}
-                  onClick={() =>
-                    typeof page === "number" && setCurrentPage(page)
-                  }
-                  className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 
-                    ${page === "..." ? "cursor-default border-transparent" : "cursor-pointer"}
-                    ${
-                      page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100"
-                        : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 bg-white dark:bg-[#0F172A]"
-                    }`}
-                >
-                  {page}
-                </button>
-              ))}
+        {filteredComplaints.length > 0 && (
+          <div className="p-4 bg-white dark:bg-[#1e293b] flex flex-col sm:row sm:flex-row items-center justify-between border-t border-gray-50 dark:border-slate-700/50 gap-4">
+            <div className="text-[10px] md:text-xs font-medium text-gray-400 dark:text-slate-500 order-2 sm:order-1">
+              عرض{" "}
+              <span className="text-gray-700 dark:text-slate-300 font-bold">
+                {currentComplaints.length}
+              </span>{" "}
+              من{" "}
+              <span className="text-gray-700 dark:text-slate-300 font-bold">
+                {totalCount}
+              </span>{" "}
+              تذكرة
             </div>
-            <button
-              disabled={currentPage === apiTotalPages}
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, apiTotalPages))
-              }
-              className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-400 transition-all active:scale-90 disabled:opacity-50"
-            >
-              <HiChevronLeft size={20} />
-            </button>
+            <div className="flex items-center gap-2 order-1 md:order-2">
+              <button
+                title="set"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-400 transition-all active:scale-90 disabled:opacity-50"
+              >
+                <HiChevronRight size={20} />
+              </button>
+              <div className="flex gap-1.5">
+                {renderPagination().map((page, i) => (
+                  <button
+                    key={i}
+                    disabled={page === "..."}
+                    onClick={() =>
+                      typeof page === "number" && setCurrentPage(page)
+                    }
+                    className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all active:scale-90 ${page === "..." ? "cursor-default border-transparent" : "cursor-pointer"} ${page === currentPage ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100" : "border-gray-200 dark:border-slate-800 text-gray-500 dark:text-slate-400 bg-white dark:bg-[#0F172A]"}`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                title="set"
+                disabled={currentPage === apiTotalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, apiTotalPages))
+                }
+                className="p-2.5 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-400 transition-all active:scale-90 disabled:opacity-50"
+              >
+                <HiChevronLeft size={20} />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

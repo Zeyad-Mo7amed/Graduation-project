@@ -14,6 +14,7 @@ import {
   type ComplaintDetails,
 } from "../../../APIs/GetComplaintDetails.api";
 import Loading from "../Loading/Loading";
+import NotFoundData from "../NotFoundData/NotFoundData";
 
 export default function SupportDetails() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,8 @@ export default function SupportDetails() {
   if (complaintDetailsLoading) {
     return <Loading />;
   }
+
+   if (!complaintDetails) return <NotFoundData />;
 
   if (!complaintDetails) {
     return (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaStar, FaRegStar, FaSearch, FaFilter } from "react-icons/fa";
+import { FaStar, FaRegStar, FaSearch } from "react-icons/fa";
 import {
   MdCheckCircleOutline,
   MdOutlineDeleteSweep,
@@ -21,6 +21,7 @@ import { ApprovedReview } from "../../APIs/ApprovedReview.api";
 import { toast } from "react-toastify";
 import { Oval } from "react-loader-spinner";
 import { DeleteReview } from "../../APIs/deleteReview.api";
+import NotFoundData from "../../Components/Shared/NotFoundData/NotFoundData";
 
 // تعريف الـ Type محلياً
 interface ReviewMapped {
@@ -56,13 +57,6 @@ export default function ReviewTheRatings() {
     refetchInterval: 60000,
   });
 
-  // const { data: fraudOrdersCount, isLoading: isLoadingFraudOrders } = useQuery<
-  //   FraudOrder[]
-  // >({
-  //   queryKey: ["fraudOrdersCount"],
-  //   queryFn: fetchFraudOrders,
-  //   refetchInterval: 60000,
-  // });
 
   const {
     mutate: handleApprovedReview,
@@ -173,6 +167,7 @@ export default function ReviewTheRatings() {
   };
 
   if (isLoadingReviews) return <Loading />;
+   if (!getAllReviews) return <NotFoundData />;
 
   return (
     <div
@@ -217,9 +212,6 @@ export default function ReviewTheRatings() {
               className="w-full pr-12 pl-4 py-3 bg-slate-50 dark:bg-slate-700/50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 dark:text-white outline-none text-sm transition-all"
             />
           </div>
-          <button className="flex items-center gap-2 px-6 py-2.5 border border-gray-200 dark:border-slate-600 rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 font-bold transition-all cursor-pointer">
-            <FaFilter className="text-sm" /> تصفية
-          </button>
         </div>
 
         <div className="overflow-x-auto">

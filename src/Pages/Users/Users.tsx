@@ -199,9 +199,23 @@ export default function Users() {
 
         <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-slate-700">
           {currentItems.length === 0 ? (
-            <div className="p-10 text-center text-gray-400">
-              لا توجد نتائج تطابق بحثك
+            <div className="flex flex-col items-center justify-center gap-4" style={{opacity: 1, transform: 'none'}}>
+              <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center">
+                <svg stroke="currentColor" fill="currentColor" strokeWidth={0} viewBox="0 0 512 512" className="text-slate-300 dark:text-slate-500 text-4xl" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="none" strokeMiterlimit={10} strokeWidth={32} d="M221.09 64a157.09 157.09 0 1 0 157.09 157.09A157.1 157.1 0 0 0 221.09 64z" />
+                  <path fill="none" strokeLinecap="round" strokeMiterlimit={10} strokeWidth={32} d="M338.29 338.29 448 448" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-slate-600 dark:text-slate-300 font-bold text-lg">
+                  لا توجد مراجعات تطابق بحثك
+                </p>
+                <p className="text-slate-400 text-sm mt-1">
+                  جرب البحث بكلمات أخرى أو تأكد من الاسم
+                </p>
+              </div>
             </div>
+
           ) : (
             <table className="w-full text-right border-collapse min-w-full">
               <thead>

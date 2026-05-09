@@ -61,7 +61,6 @@ export interface Customer {
   state: string; // أو Date إذا كنت ستقوم بتحويلها
 }
 
-
 export interface OrderDetails {
   id: number;
   serviceName: string;
@@ -92,4 +91,28 @@ export interface Review {
   reasons: string[];
   date: string;
   initial: string;
+}
+
+export interface Complaint {
+  id: number;
+  orderId: number;
+  title: string;
+  userName: string;
+  userRole: string;
+  status: string;
+  createdAt: string;
+  response: string | null;
+  userId: string;
+}
+
+export interface OrderResponse {
+  createdAt: string; // أو Date إذا كنت بتعمل لها parse لاحقاً
+  id: number;
+  orderId: number;
+  response: string | null; // لأنه حالياً null ومستقبلاً قد يحتوي على نص
+  status: "Submitted" | "Pending" | "Completed" | string; // حددت الحالة وممكن تزيد عليها
+  title: string;
+  userId: string;
+  userName: string;
+  userRole: "Client" | "Technician" | "Admin" | string; // الـ Role بناءً على البيانات
 }

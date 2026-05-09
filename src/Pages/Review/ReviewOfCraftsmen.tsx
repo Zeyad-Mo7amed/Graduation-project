@@ -85,8 +85,6 @@ export default function ReviewOfCraftsmen() {
     return pages;
   };
 
-  const hasData = currentItems.length > 0;
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -126,8 +124,46 @@ export default function ReviewOfCraftsmen() {
         </div>
 
         <div className="overflow-x-auto">
-          {!hasData ? (
+          {allTechData?.length === 0 ? (
             <NotFoundData />
+          ) : filteredData.length === 0 ? (
+            /* هذا هو الجزء الذي طلبته عند عدم وجود نتائج للبحث */
+            <div className="flex flex-col items-center justify-center gap-4 py-20 transition-all">
+              <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center">
+                <svg
+                  stroke="currentColor"
+                  fill="currentColor"
+                  strokeWidth="0"
+                  viewBox="0 0 512 512"
+                  className="text-slate-300 dark:text-slate-500 text-4xl"
+                  height="1em"
+                  width="1em"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill="none"
+                    strokeMiterlimit="10"
+                    strokeWidth="32"
+                    d="M221.09 64a157.09 157.09 0 1 0 157.09 157.09A157.1 157.1 0 0 0 221.09 64z"
+                  ></path>
+                  <path
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeMiterlimit="10"
+                    strokeWidth="32"
+                    d="M338.29 338.29 448 448"
+                  ></path>
+                </svg>
+              </div>
+              <div className="text-center">
+                <p className="text-slate-600 dark:text-slate-300 font-bold text-lg">
+                  لا توجد مراجعات تطابق بحثك
+                </p>
+                <p className="text-slate-400 text-sm mt-1">
+                  جرب البحث بكلمات أخرى أو تأكد من الاسم
+                </p>
+              </div>
+            </div>
           ) : (
             <table className="w-full text-right border-collapse min-w-[700px]">
               <thead>
@@ -187,10 +223,10 @@ export default function ReviewOfCraftsmen() {
                       <span
                         className={`px-3 py-1 rounded-md text-[11px] font-bold ${
                           tech.state === "Active"
-                            ? "bg-green-50 dark:bg-green-900/20 text-green-500  "
+                            ? "bg-green-50 dark:bg-green-900/20 text-green-500"
                             : tech.state === "Rejected"
-                              ? "bg-red-50 dark:bg-red-900/20 text-red-500  "
-                              : "bg-orange-50 dark:bg-orange-900/20 text-orange-400  "
+                              ? "bg-red-50 dark:bg-red-900/20 text-red-500"
+                              : "bg-orange-50 dark:bg-orange-900/20 text-orange-400"
                         }`}
                       >
                         {tech.state === "Active"
@@ -207,7 +243,8 @@ export default function ReviewOfCraftsmen() {
                       >
                         <IoEyeOutline size={20} />
                       </Link>
-                      <button title="delete"
+                      <button
+                        title="delete"
                         onClick={() => setDeleteId(tech.userId)}
                         className="text-gray-300 cursor-pointer ms-2 dark:text-slate-600 hover:text-red-500 transition-all hover:scale-110 inline-block"
                       >
@@ -221,61 +258,67 @@ export default function ReviewOfCraftsmen() {
           )}
         </div>
 
-        {/* Pagination Section */}
-        <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          <div className="flex items-center gap-2 order-1 md:order-2">
-            <button
-              title="previous"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="p-2.5 hover:border-blue-500 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl disabled:opacity-30 transition-all"
-            >
-              <HiChevronRight size={20} />
-            </button>
-            <div className="flex gap-1.5">
-              {getPageNumbers().map((page, i) => (
-                <button
-                  key={i}
-                  onClick={() =>
-                    typeof page === "number" && setCurrentPage(page)
-                  }
-                  className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
-                    page === currentPage
-                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                      : "border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0F172A]"
-                  } ${page === "..." ? "cursor-default border-none opacity-50" : "cursor-pointer hover:border-blue-500"}`}
-                >
-                  {page}
-                </button>
-              ))}
+        {/* Pagination Section - Only show if there is data */}
+        {filteredData.length > 0 && (
+          <div className="p-4 border-t border-gray-50 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-2 order-1 md:order-2">
+              <button
+                title="previous"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2.5 hover:border-blue-500 cursor-pointer border border-gray-200 dark:border-slate-800 rounded-xl disabled:opacity-30 transition-all"
+              >
+                <HiChevronRight size={20} />
+              </button>
+              <div className="flex gap-1.5">
+                {getPageNumbers().map((page, i) => (
+                  <button
+                    key={i}
+                    onClick={() =>
+                      typeof page === "number" && setCurrentPage(page)
+                    }
+                    className={`w-9 h-9 border flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+                      page === currentPage
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "border-gray-200 dark:border-slate-800 bg-white dark:bg-[#0F172A]"
+                    } ${
+                      page === "..."
+                        ? "cursor-default border-none opacity-50"
+                        : "cursor-pointer hover:border-blue-500"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                title="next"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="p-2.5 cursor-pointer hover:border-blue-600 border border-gray-200 dark:border-slate-800 rounded-xl disabled:opacity-30 transition-all"
+              >
+                <HiChevronLeft size={20} />
+              </button>
             </div>
-            <button
-              title="next"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages || totalPages === 0}
-              className="p-2.5 cursor-pointer hover:border-blue-600 border border-gray-200 dark:border-slate-800 rounded-xl disabled:opacity-30 transition-all"
-            >
-              <HiChevronLeft size={20} />
-            </button>
-          </div>
 
-          <div className="order-1 sm:order-2 dark:text-slate-400">
-            عرض
-            <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
-              {totalItems === 0 ? 0 : indexOfFirstItem + 1}
-            </span>
-            إلى
-            <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
-              {Math.min(indexOfLastItem, totalItems)}
-            </span>
-            من أصل
-            <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
-              {totalItems}
-            </span>
+            <div className="order-1 sm:order-2 dark:text-slate-400">
+              عرض
+              <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
+                {totalItems === 0 ? 0 : indexOfFirstItem + 1}
+              </span>
+              إلى
+              <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
+                {Math.min(indexOfLastItem, totalItems)}
+              </span>
+              من أصل
+              <span className="font-semibold mx-2 text-gray-700 dark:text-slate-200">
+                {totalItems}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

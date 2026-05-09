@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaSearch, FaFilter, FaDownload, FaRegEye } from "react-icons/fa";
+import { FaSearch, FaRegEye } from "react-icons/fa";
 import { HiChevronRight, HiChevronLeft } from "react-icons/hi2";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -23,7 +23,7 @@ export default function Orders() {
     orderData?.filter((order) => order.id.toString().includes(searchTerm)) ||
     [];
 
-  // 3. منطق الترقيم (Pagination) - تم التعديل لعرض 5 عناصر
+  // 3. منطق الترقيم (Pagination)
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -32,24 +32,43 @@ export default function Orders() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
 
-  // دالة توليد أرقام الصفحات المطورة (لو عدي صفحة 2 يظهر الـ ...)
-  const getPageNumbers = () => {
-    const pages = [];
-    if (totalPages <= 4) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      if (currentPage <= 2) {
-        pages.push(1, 2, 3, "...", totalPages);
-      } else if (currentPage >= totalPages - 1) {
-        pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, "...", currentPage, "...", totalPages);
-      }
-    }
-    return pages;
-  };
+const getPageNumbers = () => {
+  const pages: (number | string)[] = [];
 
-  // 4. تنسيق الألوان والحالات المطلوبة
+  // لو الصفحات قليلة
+  if (totalPages <= 3) {
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // أول الصفحات
+    if (currentPage <= 2) {
+      pages.push(1, 2, 3, "...", totalPages);
+    }
+
+    // آخر الصفحات
+    else if (currentPage >= totalPages - 1) {
+      pages.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
+    }
+
+    // النص
+    else {
+      pages.push(
+        1,
+        "...",
+        currentPage - 1,
+        currentPage,
+        currentPage + 1,
+        "...",
+        totalPages,
+      );
+    }
+  }
+
+  return pages;
+};
+
+  // 4. تنسيق الألوان والحالات
   const getStatusStyles = (state: string) => {
     switch (state) {
       case "Completed":
@@ -109,12 +128,6 @@ export default function Orders() {
               className="pr-11 pl-4 py-2.5 bg-gray-50/50 dark:bg-[#0F172A] border border-gray-200 dark:border-slate-800 dark:text-white rounded-2xl text-sm w-full md:w-64 lg:w-72 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-gray-400"
             />
           </div>
-          <button className="flex cursor-pointer items-center justify-center gap-2 flex-1 md:flex-none px-4 py-2.5 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <FaFilter className="text-xs" /> تصفية
-          </button>
-          <button className="flex cursor-pointer items-center justify-center gap-2 flex-1 md:flex-none px-4 py-2.5 border border-gray-200 dark:border-slate-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all duration-200">
-            <FaDownload className="text-xs" /> تصدير
-          </button>
         </div>
       </div>
 
@@ -136,7 +149,48 @@ export default function Orders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
-            {currentOrders.length > 0 ? (
+            {filteredOrders.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="p-20 text-center">
+                  <div className="flex flex-col items-center justify-center gap-4 transition-all">
+                    <div className="w-20 h-20 bg-slate-50 dark:bg-slate-700/50 rounded-full flex items-center justify-center">
+                      <svg
+                        stroke="currentColor"
+                        fill="currentColor"
+                        strokeWidth="0"
+                        viewBox="0 0 512 512"
+                        className="text-slate-300 dark:text-slate-500 text-4xl"
+                        height="1em"
+                        width="1em"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fill="none"
+                          strokeMiterlimit="10"
+                          strokeWidth="32"
+                          d="M221.09 64a157.09 157.09 0 1 0 157.09 157.09A157.1 157.1 0 0 0 221.09 64z"
+                        ></path>
+                        <path
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeMiterlimit="10"
+                          strokeWidth="32"
+                          d="M338.29 338.29 448 448"
+                        ></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-slate-600 dark:text-slate-300 font-bold text-lg">
+                        لا توجد طلبات تطابق بحثك
+                      </p>
+                      <p className="text-slate-400 text-sm mt-1">
+                        جرب البحث برقم طلب آخر أو تأكد من الرقم
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
               currentOrders.map((order, index) => (
                 <motion.tr
                   key={order.id}
@@ -165,7 +219,9 @@ export default function Orders() {
                   </td>
                   <td className="p-4 text-center">
                     <span
-                      className={`px-4 py-1.5 rounded-full text-[11px] font-bold inline-block min-w-[110px] shadow-sm ${getStatusStyles(order.state)}`}
+                      className={`px-4 py-1.5 rounded-full text-[11px] font-bold inline-block min-w-[110px] shadow-sm ${getStatusStyles(
+                        order.state,
+                      )}`}
                     >
                       {translateStatus(order.state)}
                     </span>
@@ -180,71 +236,73 @@ export default function Orders() {
                   </td>
                 </motion.tr>
               ))
-            ) : (
-              <tr>
-                <td colSpan={8} className="p-10 text-center text-gray-400">
-                  لا توجد طلبات تطابق بحثك
-                </td>
-              </tr>
             )}
           </tbody>
         </table>
       </div>
 
       {/* Pagination Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-50 dark:border-slate-800 gap-6">
-        <div className="flex items-center gap-2 order-1 md:order-2">
-          <button
-            title="Right"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-50"
-          >
-            <HiChevronRight size={20} />
-          </button>
+      {filteredOrders.length > 0 && (
+        <div className="flex flex-col md:flex-row items-center justify-between mt-8 pt-6 border-t border-gray-50 dark:border-slate-800 gap-6">
+          <div className="flex items-center gap-2 order-1 md:order-2">
+            <button
+              title="Right"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-50"
+            >
+              <HiChevronRight size={20} />
+            </button>
 
-          <div className="flex gap-1.5">
-            {getPageNumbers().map((page, i) => (
-              <button
-                key={i}
-                disabled={page === "..."}
-                onClick={() => typeof page === "number" && setCurrentPage(page)}
-                className={`w-9 h-9 border cursor-pointer flex items-center justify-center rounded-xl text-sm font-bold transition-all
-                  ${page === currentPage ? "bg-blue-600 text-white border-blue-600 shadow-md" : "border-gray-200 dark:border-slate-800 text-gray-500 hover:border-blue-300 bg-white dark:bg-[#0F172A]"}
+            <div className="flex gap-1.5">
+              {getPageNumbers().map((page, i) => (
+                <button
+                  key={i}
+                  disabled={page === "..."}
+                  onClick={() =>
+                    typeof page === "number" && setCurrentPage(page)
+                  }
+                  className={`w-9 h-9 border cursor-pointer flex items-center justify-center rounded-xl text-sm font-bold transition-all
+                  ${
+                    page === currentPage
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : "border-gray-200 dark:border-slate-800 text-gray-500 hover:border-blue-300 bg-white dark:bg-[#0F172A]"
+                  }
                   ${page === "..." ? "cursor-default border-none" : ""}`}
-              >
-                {page}
-              </button>
-            ))}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              title="Left"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-50"
+            >
+              <HiChevronLeft size={20} />
+            </button>
           </div>
 
-          <button
-            title="Left"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages || totalPages === 0}
-            className="p-2.5 cursor-pointer border-gray-200 dark:border-slate-800 border rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 hover:border-blue-400 text-gray-400 dark:text-slate-500 transition-all active:scale-90 disabled:opacity-50"
-          >
-            <HiChevronLeft size={20} />
-          </button>
+          <div className="text-sm font-medium order-2 md:order-1">
+            <span className="text-gray-400 dark:text-slate-500">عرض </span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
+              {filteredOrders.length > 0 ? indexOfFirstItem + 1 : 0}
+            </span>
+            <span className="text-gray-400 dark:text-slate-500"> إلى </span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
+              {Math.min(indexOfLastItem, filteredOrders.length)}
+            </span>
+            <span className="text-gray-400 dark:text-slate-500"> من أصل </span>
+            <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
+              {filteredOrders.length}
+            </span>
+          </div>
         </div>
-
-        <div className="text-sm font-medium order-2 md:order-1">
-          <span className="text-gray-400 dark:text-slate-500">عرض </span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            {filteredOrders.length > 0 ? indexOfFirstItem +1 : 0}
-          </span>
-          <span className="text-gray-400 dark:text-slate-500"> إلى </span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            {Math.min(indexOfLastItem, filteredOrders.length)}
-          </span>
-          <span className="text-gray-400 dark:text-slate-500"> من أصل </span>
-          <span className="text-slate-800 dark:text-slate-200 font-bold px-0.5">
-            {filteredOrders.length}
-          </span>
-        </div>
-      </div>
+      )}
     </motion.div>
   );
 }
